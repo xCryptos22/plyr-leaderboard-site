@@ -1,16 +1,17 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>PLYR Speedrun Leaderboard</title>
-  <meta name="theme-color" content="#0B1020" />
-  <!-- Inter (wie auf plyr.network) -->
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>SpeedInk × PLYR Leaderboard</title>
+  <meta name="theme-color" content="#0B0B0D"/>
+
+  <!-- Inter Font -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap" rel="stylesheet">
 
-  <!-- Tailwind (CDN) -->
+  <!-- Tailwind CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
     tailwind.config = {
@@ -18,12 +19,14 @@
         fontFamily: { sans: ['Inter','ui-sans-serif','system-ui'] },
         extend: {
           colors: {
-            bg: { 900:'#0B1020', 800:'#101833', 700:'#121B3A' },
-            brand: { 500:'#00D4FF', 600:'#00B7E0' },  /* Cyan von PLYR */
-            accent:{ 500:'#9B8CFF', 600:'#7C6DFF' }   /* Violett von PLYR */
+            bg: { 900:'#0B0B0D', 800:'#111114', 700:'#16161A' },
+            border: { 900:'rgba(255,255,255,0.08)' },
+            textc: { 50:'#FFFFFF', 200:'#E5E7EB', 400:'#9CA3AF' },
+            ink: { 500:'#FF6600', 400:'#FF7A1A', 600:'#CC5200' } /* SpeedInk Orange */
           },
           boxShadow: {
-            glow: '0 10px 30px rgba(0,212,255,.18)',
+            glow: '0 12px 28px rgba(255,102,0,0.25)',
+            inset: 'inset 0 1px 0 rgba(255,255,255,0.05)',
             card: '0 1px 0 rgba(255,255,255,.04), 0 8px 30px rgba(0,0,0,.35)'
           },
           backdropBlur: { xs: '2px' }
@@ -34,46 +37,49 @@
 
   <style>
     :root{
-      --plyr-bg:#0B1020;
-      --plyr-card:rgba(255,255,255,.04);
-      --plyr-border:rgba(255,255,255,.07);
-      --plyr-cyan:#00D4FF;
-      --plyr-violet:#9B8CFF;
+      --bg:#0B0B0D;
+      --card:rgba(255,255,255,.04);
+      --border:rgba(255,255,255,.08);
+      --ink:#FF6600;
+      --ink-soft:#FF7A1A;
+      --text:#FFFFFF;
+      --text-soft:#E5E7EB;
+      --text-dim:#9CA3AF;
     }
-    html,body{background:var(--plyr-bg);}
-    body{color:#e5e7eb; font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto; }
-    /* Glass/Glow & Gradient wie auf plyr.network */
-    .glass{backdrop-filter:blur(10px);background:var(--plyr-card);border:1px solid var(--plyr-border)}
-    .gradient-text{background:linear-gradient(90deg,var(--plyr-cyan),var(--plyr-violet));-webkit-background-clip:text;background-clip:text;color:transparent}
-    .btn-primary{background:linear-gradient(90deg,var(--plyr-cyan),var(--plyr-violet));color:#0B1020;border:0}
-    .btn-primary:hover{filter:brightness(1.05)}
-    .btn-ghost{background:rgba(255,255,255,.04);border:1px solid var(--plyr-border)}
-    .btn-ghost:hover{border-color:#64748b}
+    html,body{background:var(--bg);}
+    body{color:var(--text-soft);font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto}
+    .glass{backdrop-filter:blur(10px);background:var(--card);border:1px solid var(--border)}
+    .btn-ink{background:var(--ink);color:#0B0B0D;font-weight:800;letter-spacing:.02em;text-transform:uppercase}
+    .btn-ink:hover{filter:brightness(1.04)}
+    .btn-ghost{background:rgba(255,255,255,.04);border:1px solid var(--border)}
     .pill{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);border-radius:9999px}
-    .pill-active{box-shadow:0 0 0 1px var(--plyr-cyan) inset,0 0 20px rgba(0,212,255,.25);background:rgba(0,212,255,.12)}
-    .thin-scrollbar{scrollbar-width:thin;scrollbar-color:#46506a transparent}
-    .thin-scrollbar::-webkit-scrollbar{height:8px}
-    .thin-scrollbar::-webkit-scrollbar-thumb{background:#46506a;border-radius:9999px}
-
-    /* Dezente „Lichtflecken“ */
-    .light-a,.light-b{position:absolute;border-radius:50%;pointer-events:none}
-    .light-a{right:-18rem;top:-18rem;width:38rem;height:38rem;background:var(--plyr-cyan);filter:blur(120px);opacity:.12}
-    .light-b{left:-14rem;bottom:-14rem;width:28rem;height:28rem;background:var(--plyr-violet);filter:blur(120px);opacity:.12}
-
-    /* Tabelle */
-    table thead th{font-weight:600;letter-spacing:.01em}
-    tbody tr:hover td{background:rgba(255,255,255,.04)}
+    .pill-active{box-shadow:0 0 0 1px var(--ink) inset,0 0 18px rgba(255,102,0,.25);background:rgba(255,102,0,.10)}
+    .badge{display:inline-flex;align-items:center;gap:.45rem;padding:.25rem .6rem;border-radius:.5rem;background:#111114;border:1px solid var(--border)}
+    .ticker{font-variant-numeric:tabular-nums;letter-spacing:.03em;font-weight:800}
+    .hero-kicker{display:flex;gap:.5rem;align-items:center;font-weight:800;letter-spacing:.06em;color:#fff}
+    .hero-stack h1 span{display:block;line-height:1; font-weight:900; font-size:clamp(2.2rem, 6vw, 4rem);}
+    .hero-stack .line-orange{color:var(--ink)}
+    .hero-stack .line-white{color:#fff}
+    .hero-stack .line-outline{color:transparent;-webkit-text-stroke:1px rgba(255,255,255,0.3)}
+    /* card accent border like speed.ink tiles */
+    .accent-border{position:relative}
+    .accent-border:before{content:'';position:absolute;inset:0;border-radius:1rem;padding:1px;background:linear-gradient(90deg,rgba(255,255,255,.10),rgba(255,102,0,.35));-webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask-composite:exclude;pointer-events:none}
+    /* hover lift */
+    .lift:hover{transform:translateY(-2px);transition:transform .15s ease}
+    /* table */
+    table thead th{font-weight:700;color:#E5E7EB;letter-spacing:.02em;text-transform:uppercase}
+    tbody tr:hover td{background:rgba(255,255,255,.035)}
   </style>
 </head>
 
-<body class="min-h-screen bg-bg-900 selection:bg-brand-500/30">
-  <!-- Nav -->
+<body class="min-h-screen bg-bg-900 selection:bg-ink-500/30">
+  <!-- Top bar -->
   <nav class="sticky top-0 z-40 bg-bg-900/70 backdrop-blur-xs border-b border-white/5">
     <div class="max-w-7xl mx-auto px-4 h-14 flex items-center justify-between">
       <div class="flex items-center gap-3">
-        <div class="h-7 w-7 rounded-md bg-gradient-to-br from-brand-500 to-accent-600"></div>
-        <span class="text-lg font-extrabold tracking-tight gradient-text">PLYR</span>
-        <span class="ml-2 text-slate-400 hidden sm:inline">Speedrun Leaderboard</span>
+        <div class="h-7 w-7 rounded-md" style="background:linear-gradient(135deg,#1F1F22 0%, #342E2A 40%, #FF6600 100%);"></div>
+        <span class="text-lg font-extrabold tracking-tight text-white">SPEEDINK</span>
+        <span class="ml-2 text-textc-400 hidden sm:inline">Speedrun Leaderboard</span>
       </div>
       <div class="flex items-center gap-2">
         <a id="explorerLink" target="_blank" class="btn-ghost px-3 py-1.5 rounded-lg transition">Explorer öffnen</a>
@@ -82,50 +88,60 @@
     </div>
   </nav>
 
-  <!-- Hero -->
-  <header class="relative overflow-hidden">
-    <div class="light-a"></div><div class="light-b"></div>
+  <!-- Hero inspired by speed.ink -->
+  <header class="relative">
     <div class="max-w-7xl mx-auto px-4 py-8 md:py-12">
-      <h1 class="text-3xl md:text-5xl font-extrabold leading-tight">
-        <span class="gradient-text">PLYR Speedrun Leaderboard</span>
-      </h1>
-      <p class="text-slate-300 mt-2">
-        NFT‑basierte Zeiten • gefiltert nach <span id="tokenName">Collection</span> • Contract
-        <code id="contractShort" class="text-slate-400"></code>
-      </p>
+      <div class="hero-kicker gap-2 text-xs uppercase tracking-widest">
+        <span class="badge">CURRENT MAP <span id="heroMap" class="font-bold">—</span></span>
+        <span class="badge">DEATH TOLL <span id="heroDeaths" class="font-bold">—</span></span>
+        <span class="badge">TIME LEFT <span id="heroTime" class="ticker">—</span></span>
+        <span class="badge">TOKENS <span id="heroTokens" class="font-bold">—</span></span>
+      </div>
+      <div class="hero-stack mt-4">
+        <h1>
+          <span class="line-orange">STYLE IT.</span>
+          <span class="line-white">SPEED IT.</span>
+          <span class="line-outline">STAMP IT.</span>
+        </h1>
+        <p class="text-textc-200 mt-3">NFT‑basierte Zeiten • Contract <code id="contractShort" class="text-textc-400"></code></p>
+        <div class="mt-5 flex flex-wrap gap-3">
+          <a id="createPlyrId" target="_blank" class="btn-ink px-4 py-2 rounded-xl lift">Create my PLYR[ID]</a>
+          <a id="proofLink" target="_blank" class="btn-ghost px-4 py-2 rounded-xl lift">Proof</a>
+        </div>
+      </div>
     </div>
   </header>
 
   <!-- Controls -->
   <section class="max-w-7xl mx-auto px-4">
-    <div class="glass rounded-2xl p-4 md:p-6 shadow-glow">
+    <div class="glass rounded-2xl p-4 md:p-6 shadow-glow accent-border">
       <div class="grid md:grid-cols-3 gap-4">
         <!-- Mapid -->
         <div>
-          <label class="text-sm text-slate-300">Runde (mapid)</label>
+          <label class="text-sm text-textc-200">Runde (mapid)</label>
           <div class="mt-1 flex items-center gap-2">
-            <select id="mapSelect" class="w-full bg-bg-800 border border-slate-700 rounded-xl px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand-500"></select>
-            <button id="prevMap" title="Vorherige Runde" class="px-3 py-2 rounded-lg bg-bg-800 border border-slate-700 hover:bg-slate-800">◀</button>
-            <button id="nextMap" title="Nächste Runde" class="px-3 py-2 rounded-lg bg-bg-800 border border-slate-700 hover:bg-slate-800">▶</button>
+            <select id="mapSelect" class="w-full bg-bg-800 border border-border-900 rounded-xl px-3 py-2 focus:outline-none focus:ring-2 focus:ring-ink-500"></select>
+            <button id="prevMap" title="Vorherige Runde" class="px-3 py-2 rounded-lg bg-bg-800 border border-border-900 hover:bg-[#1d1d22]">◀</button>
+            <button id="nextMap" title="Nächste Runde" class="px-3 py-2 rounded-lg bg-bg-800 border border-border-900 hover:bg-[#1d1d22]">▶</button>
           </div>
-          <p class="text-xs text-slate-400 mt-1">Standard: vorletzte Runde</p>
+          <p class="text-xs text-textc-400 mt-1">Standard: vorletzte Runde</p>
         </div>
 
-        <!-- Cointype Filter -->
+        <!-- Cointype Filter as 'Crew' chips -->
         <div>
-          <label class="text-sm text-slate-300">Währung (cointype)</label>
-          <div id="coinFilter" class="mt-1 flex gap-2 overflow-x-auto thin-scrollbar pr-1 py-1"></div>
-          <p class="text-xs text-slate-400 mt-1">Eigenes Board je Währung + Gesamt‑Board.</p>
+          <label class="text-sm text-textc-200">Crew / Währung</label>
+          <div id="coinFilter" class="mt-1 flex gap-2 overflow-x-auto pr-1 py-1"></div>
+          <p class="text-xs text-textc-400 mt-1">Eigenes Board je Währung + Gesamt‑Board.</p>
         </div>
 
         <!-- Player search -->
         <div>
-          <label class="text-sm text-slate-300">Spieler suchen</label>
+          <label class="text-sm text-textc-200">Spieler suchen</label>
           <div class="mt-1 flex items-center gap-2">
-            <input id="playerSearch" placeholder="Name (ohne .plyr) oder Adresse" class="w-full bg-bg-800 border border-slate-700 rounded-xl px-3 py-2 focus:outline-none focus:ring-2 focus:ring-accent-600" />
-            <button id="showPlayerBtn" class="btn-primary px-4 py-2 rounded-xl font-semibold">Anzeigen</button>
+            <input id="playerSearch" placeholder="Name (ohne .plyr) oder Adresse" class="w-full bg-bg-800 border border-border-900 rounded-xl px-3 py-2 focus:outline-none focus:ring-2 focus:ring-ink-500" />
+            <button id="showPlayerBtn" class="btn-ink px-4 py-2 rounded-xl">Anzeigen</button>
           </div>
-          <p class="text-xs text-slate-400 mt-1">Tipp: Namen im Leaderboard anklicken für alle Zeiten.</p>
+          <p class="text-xs text-textc-400 mt-1">Tipp: Namen im Leaderboard anklicken für alle Zeiten.</p>
         </div>
       </div>
     </div>
@@ -133,19 +149,19 @@
 
   <!-- Leaderboard -->
   <main class="max-w-7xl mx-auto px-4 mt-6 mb-24">
-    <div class="glass rounded-2xl shadow-glow">
+    <div class="glass rounded-2xl shadow-glow accent-border">
       <div class="flex items-center justify-between px-4 md:px-6 py-4 border-b border-white/5">
         <div>
-          <h2 class="text-xl md:text-2xl font-bold">Leaderboard</h2>
-          <p id="boardSubtitle" class="text-slate-400 text-sm"></p>
+          <h2 class="text-xl md:text-2xl font-extrabold text-white">Leaderboard</h2>
+          <p id="boardSubtitle" class="text-textc-400 text-sm"></p>
         </div>
-        <div class="text-sm text-slate-400"><span id="totalRows">0</span> Einträge • <span id="loadedCount">0</span> NFTs geladen</div>
+        <div class="text-sm text-textc-400"><span id="totalRows">0</span> Einträge • <span id="loadedCount">0</span> NFTs geladen</div>
       </div>
 
       <div class="overflow-x-auto">
         <table class="min-w-full text-left">
-          <thead class="bg-bg-800/60">
-            <tr class="text-slate-300 text-sm">
+          <thead class="bg-[#111114]">
+            <tr class="text-textc-200 text-xs">
               <th class="px-4 md:px-6 py-3">Platz</th>
               <th class="px-4 md:px-6 py-3">Spieler</th>
               <th class="px-4 md:px-6 py-3">Zeit</th>
@@ -158,7 +174,7 @@
       </div>
 
       <div id="loadMoreWrap" class="flex items-center justify-center py-6 hidden">
-        <button id="loadMoreBtn" class="px-5 py-2 rounded-xl bg-bg-800 border border-slate-700 hover:bg-slate-800">Mehr laden…</button>
+        <button id="loadMoreBtn" class="px-5 py-2 rounded-xl bg-bg-800 border border-border-900 hover:bg-[#1d1d22]">Mehr laden…</button>
       </div>
     </div>
   </main>
@@ -166,17 +182,17 @@
   <!-- Player Modal -->
   <div id="playerModal" class="fixed inset-0 z-50 hidden">
     <div class="absolute inset-0 bg-black/70"></div>
-    <div class="relative max-w-3xl mx-auto mt-16 glass rounded-2xl shadow-glow">
+    <div class="relative max-w-3xl mx-auto mt-16 glass rounded-2xl shadow-glow accent-border">
       <div class="flex items-center justify-between px-6 py-4 border-b border-white/5">
         <div>
-          <h3 id="playerTitle" class="text-xl font-bold"></h3>
-          <p id="playerSubtitle" class="text-slate-400 text-sm"></p>
+          <h3 id="playerTitle" class="text-xl font-extrabold text-white"></h3>
+          <p id="playerSubtitle" class="text-textc-400 text-sm"></p>
         </div>
-        <button id="closePlayer" class="px-3 py-2 rounded-lg bg-bg-800 border border-slate-700">Schließen</button>
+        <button id="closePlayer" class="px-3 py-2 rounded-lg bg-bg-800 border border-border-900">Schließen</button>
       </div>
       <div class="p-4 md:p-6 max-h-[70vh] overflow-y-auto">
         <table class="min-w-full text-left">
-          <thead class="bg-bg-800/60 text-slate-300 text-sm">
+          <thead class="bg-[#111114] text-textc-200 text-xs">
             <tr>
               <th class="px-4 md:px-6 py-2">Runde</th>
               <th class="px-4 md:px-6 py-2">Währung</th>
@@ -187,12 +203,13 @@
           <tbody id="playerBody" class="divide-y divide-white/5"></tbody>
         </table>
 
+        <!-- Perk NFT block -->
         <div class="mt-6">
           <div class="flex items-center justify-between">
             <h4 class="text-lg font-semibold">Perk‑NFT</h4>
-            <a id="perkLink" target="_blank" class="text-brand-300 hover:underline hidden">Zum NFT</a>
+            <a id="perkLink" target="_blank" class="text-ink-400 hover:underline hidden">Zum NFT</a>
           </div>
-          <div id="perkStatus" class="text-slate-400 text-sm mt-1"></div>
+          <div id="perkStatus" class="text-textc-400 text-sm mt-1"></div>
           <div id="perkWrap" class="mt-3 grid sm:grid-cols-2 md:grid-cols-3 gap-3"></div>
         </div>
       </div>
@@ -201,13 +218,13 @@
 
   <!-- Loading overlay -->
   <div id="loadingOverlay" class="fixed inset-0 pointer-events-none grid place-items-center">
-    <div class="p-4 rounded-2xl bg-bg-800/85 border border-slate-700 shadow-xl">
-      <div class="animate-spin h-6 w-6 border-2 border-slate-500 border-t-brand-500 rounded-full mx-auto"></div>
-      <p class="text-sm text-slate-300 mt-2">Lade NFT‑Daten… <span id="progressText" class="text-slate-400"></span></p>
+    <div class="p-4 rounded-2xl bg-[#111114]/90 border border-border-900 shadow-xl">
+      <div class="animate-spin h-6 w-6 border-2 border-[#3f3f46] border-top: transparent; border-right-color: transparent; border-left-color: transparent; border-bottom-color: var(--ink); border-radius: 9999px; margin: 0 auto;"></div>
+      <p class="text-sm text-textc-200 mt-2">Lade NFT‑Daten… <span id="progressText" class="text-textc-400"></span></p>
     </div>
   </div>
 
-  <!-- === Original JavaScript aus deiner hochgeladenen Datei === -->
+  <!-- Original JS -->
   <script>
 tailwind.config = {
       theme: {
@@ -773,6 +790,27 @@ tailwind.config = {
     runTests()
     start()
   })()
+  </script>
+
+  <!-- Minimal glue to set hero values if available in your JS state -->
+  <script>
+    // Try to hook into existing state/DOM once your JS populated data
+    const heroMap = document.getElementById('heroMap');
+    const heroDeaths = document.getElementById('heroDeaths');
+    const heroTime = document.getElementById('heroTime');
+    const heroTokens = document.getElementById('heroTokens');
+    const createPlyrId = document.getElementById('createPlyrId');
+    const proofLink = document.getElementById('proofLink');
+
+    // Reasonable defaults / external links
+    createPlyrId.href = 'https://pgu.plyr.network/'; // SpeedInk CTA
+    proofLink.href = 'https://explorer.plyr.network/';
+
+    // Fallbacks if your JS doesn't provide these:
+    if(heroMap && !heroMap.textContent.trim()) heroMap.textContent = '—';
+    if(heroDeaths && !heroDeaths.textContent.trim()) heroDeaths.textContent = '—';
+    if(heroTokens && !heroTokens.textContent.trim()) heroTokens.textContent = '—';
+    if(heroTime && !heroTime.textContent.trim()) heroTime.textContent = '—';
   </script>
 </body>
 </html>
