@@ -45,7 +45,7 @@
     body{color:var(--text-soft); font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto;}
 
     .glass{backdrop-filter:blur(8px); background:var(--card); border:1px solid var(--border)}
-    .btn-ink{background:var(--ink);color:#0B0B0D;font-weight:800;letter-spacing:.02em;text-transform:uppercase}
+    .btn-ink{background:var(--ink);color:#0B0B0D;font-weight:800;letter-spacing:.02em;text-transform:uppercase;display:inline-flex;align-items:center;justify-content:center;text-align:center;min-height:44px;}
     .btn-ink:hover{filter:brightness(1.04)}
     .btn-ghost{background:rgba(255,255,255,.04);border:1px solid var(--border)}
     .badge{display:inline-flex;align-items:center;gap:.45rem;padding:.25rem .6rem;border-radius:.5rem;background:#111114;border:1px solid var(--border)}
@@ -82,6 +82,15 @@
 
     /* Mobile */
     @media (max-width: 640px){
+      /* show ALL coin pills by wrapping instead of forcing horizontal scroll */
+      .coin-row{display:flex; flex-wrap:wrap; overflow-x:visible; gap:.5rem .5rem; padding-bottom:.25rem;}
+      .search-row{display:grid; grid-template-columns: 1fr; gap:.6rem;}
+      .search-row button{width:100%;}
+      .arrow-btn{padding:.6rem .7rem; border-radius:.7rem;}
+      .top-actions{flex-direction:column;}
+      .top-actions > *{min-width:0; width:100%; flex: 1 1 auto;}
+      .container-max{max-width:100%;}
+    
       .controls-grid{display:grid; grid-template-columns: 1fr; gap: .9rem;}
       .search-row{display:grid; grid-template-columns: 1fr; gap:.6rem;}
       .search-row button{width:100%;}
