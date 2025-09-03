@@ -53,6 +53,9 @@
     .pill-active{box-shadow:0 0 0 1px var(--ink) inset,0 0 18px rgba(255,102,0,.25);background:rgba(255,102,0,.10)}
     .badge{display:inline-flex;align-items:center;gap:.45rem;padding:.25rem .6rem;border-radius:.5rem;background:#111114;border:1px solid var(--border)}
     .ticker{font-variant-numeric:tabular-nums;letter-spacing:.03em;font-weight:800}
+    .gi-badge{display:inline-flex;align-items:center;gap:.5rem;padding:.5rem .8rem;border-radius:0.875rem;background:linear-gradient(135deg, rgba(255,102,0,.15), rgba(255,122,26,.10));border:1px solid rgba(255,102,0,.35);box-shadow:0 0 0 1px rgba(255,102,0,.25) inset, 0 12px 28px rgba(255,102,0,.22); color:#fff;}
+    .gi-badge .gi-dot{width:.6rem;height:.6rem;border-radius:9999px;background:#FF6600;box-shadow:0 0 12px rgba(255,102,0,.8)}
+    .gi-badge .gi-val{font-variant-numeric:tabular-nums; font-weight:900; letter-spacing:.02em}
 
     /* Mobile adjustments */
     .nav-wrap{padding-top:calc(var(--safe-top) + 6px);}
@@ -85,6 +88,12 @@
     table thead th{font-weight:700;color:#E5E7EB;letter-spacing:.02em;text-transform:uppercase; font-size:.75rem}
     tbody td{padding-top:.6rem; padding-bottom:.6rem;}
     tbody tr:hover td{background:rgba(255,255,255,.035)}
+  
+    .row-inline-spinner{display:inline-block;width:.9rem;height:.9rem;border-radius:9999px;border:2px solid rgba(255,255,255,.25);border-top-color:#FF6600;animation:spin 1s linear infinite;vertical-align:middle;margin-left:.4rem}
+    .perk-inline-spinner{display:inline-block;width:1rem;height:1rem;border-radius:9999px;border:2px solid rgba(255,255,255,.2);border-top-color:#FF6600;animation:spin 1s linear infinite;vertical-align:middle;margin-left:.5rem}
+    @keyframes spin{to{transform:rotate(360deg)}}
+    .perk-skeleton{height:2.25rem;border-radius:.75rem;background:linear-gradient(90deg, rgba(255,255,255,.06), rgba(255,255,255,.12), rgba(255,255,255,.06));background-size:200% 100%;animation:sk 1.2s linear infinite;}
+    @keyframes sk{0%{background-position:0% 0}100%{background-position:200% 0}}
   </style>
 </head>
 
@@ -141,7 +150,7 @@
             <button id="prevMap" title="Vorherige Runde" class="arrow-btn px-2.5 py-2 rounded-lg bg-bg-800 border border-border-900 hover:bg-[#1d1d22]">◀</button>
             <button id="nextMap" title="Nächste Runde" class="arrow-btn px-2.5 py-2 rounded-lg bg-bg-800 border border-border-900 hover:bg-[#1d1d22]">▶</button>
           </div>
-          <p class="text-[12px] text-textc-400 mt-1">Standard: vorletzte Runde</p>
+          <p class="text-[12px] text-textc-400 mt-1">Standard: höchste Runde</p>
         </div>
 
         <!-- Cointype Filter -->
@@ -204,6 +213,10 @@
         <div>
           <h3 id="playerTitle" class="text-lg sm:text-xl font-extrabold text-white"></h3>
           <p id="playerSubtitle" class="text-textc-400 text-xs sm:text-sm"></p>
+          <div id="giCard" class="mt-2 hidden">
+            <div class="gi-badge"><span class="gi-dot"></span><span>Golden Ink</span><span class="gi-val" id="giBalanceBig">—</span></div>
+          </div>
+          
         </div>
         <button id="closePlayer" class="px-3 py-2 rounded-lg bg-bg-800 border border-border-900">Schließen</button>
       </div>
@@ -222,7 +235,7 @@
 
         <div class="mt-5">
           <div class="flex items-center justify-between">
-            <h4 class="text-base sm:text-lg font-semibold">Perk‑NFT</h4>
+            <h4 class="text-base sm:text-lg font-semibold">Perk‑NFT <span id="perkSpinner" class="perk-inline-spinner hidden"></span></h4>
             <a id="perkLink" target="_blank" class="text-ink-400 hover:underline hidden">Zum NFT</a>
           </div>
           <div id="perkStatus" class="text-textc-400 text-xs sm:text-sm mt-1"></div>
@@ -233,45 +246,36 @@
   </div>
 
   <!-- Loading overlay -->
-  <div id="loadingOverlay" class="fixed inset-0 pointer-events-none grid place-items-center">
+  <div id="loadingOverlay" class="fixed inset-0 pointer-events-none grid place-items-center hidden">
     <div class="p-4 rounded-2xl bg-[#111114]/90 border border-border-900 shadow-xl">
       <div class="animate-spin h-6 w-6 border-2 border-[#3f3f46] border-t-ink-500 rounded-full mx-auto"></div>
-      <p class="text-sm text-textc-200 mt-2">Lade NFT‑Daten… <span id="progressText" class="text-textc-400"></span></p>
+      <p class="text-sm text-textc-200 mt-2">
+        <span id="loadingPhase">Suche Runden…</span>
+        <span id="progressText" class="text-textc-400"></span>
+      </p>
     </div>
   </div>
 
-  <!-- Original JS -->
+  <!-- JS -->
   <script>
-tailwind.config = {
-      theme: {
-        extend: {
-          colors: {
-            bg: { 900: '#0B1020', 800: '#101833' },
-            primary: { 500: '#6EE7F9', 600: '#22D3EE' },
-            accent: { 500: '#A78BFA', 600: '#8B5CF6' }
-          },
-          boxShadow: { glow: '0 10px 30px rgba(110,231,249,0.2)' }
-        }
-      }
-    }
-  
-
-
   ;(() => {
     const API_BASE = 'https://explorer.plyr.network'
     const CONTRACT = '0x5c8b153c2451010aA074b4387Ec3573cFb547531'.toLowerCase()
     const PERK_CONTRACT = '0xa6b69deDd6c0c333CE34b2564aaCBCB7616a6dd1'.toLowerCase()
+    const GI_CONTRACT = '0xEa547F310f6A9dFdB10eEAa03b76EBa8D8eCDc58'.toLowerCase()
     const ZERO = '0x0000000000000000000000000000000000000000'
 
     // ------------------ State ------------------
     const state = {
-      items: [],          // All NFT instances (raw)
-      mapids: new Set(),  // All mapids discovered
-      coins: new Set(),   // All cointypes discovered
-      nextUrl: null,      // Next page URL if any
-      baseListUrl: null,  // Base URL for building next page URLs
+      items: [],          // NFTs for the SELECTED map only
+      mapids: new Set(),  // All mapids discovered (from lightweight discovery pass)
+      coins: new Set(),   // Coins for current map
       selectedMap: null,
       selectedCoin: 'ALL',
+
+      // pagination helpers
+      baseListUrl: null,
+      nextUrl: null
     }
 
     // ------------------ UI Refs ------------------
@@ -290,6 +294,7 @@ tailwind.config = {
     const reloadBtn     = document.getElementById('reloadBtn')
     const loadingOverlay= document.getElementById('loadingOverlay')
     const progressText  = document.getElementById('progressText')
+    const loadingPhase  = document.getElementById('loadingPhase')
 
     const playerModal   = document.getElementById('playerModal')
     const playerTitle   = document.getElementById('playerTitle')
@@ -301,68 +306,23 @@ tailwind.config = {
     const perkWrap      = document.getElementById('perkWrap')
     const perkStatus    = document.getElementById('perkStatus')
     const perkLink      = document.getElementById('perkLink')
+    const perkSpinner  = document.getElementById('perkSpinner')
+
+    const giCard       = document.getElementById('giCard')
+    const giBalanceBig = document.getElementById('giBalanceBig')
 
     // Init header refs
     contractShort.textContent = CONTRACT.slice(0,8) + '…' + CONTRACT.slice(-6)
     explorerLink.href = `${API_BASE}/token/${CONTRACT}`
 
     // ------------------ Helpers ------------------
-    function pickDefaultMapId(ids){
-      const arr = Array.from(ids).map(Number).filter(n=>!Number.isNaN(n)).sort((a,b)=>b-a)
-      return arr.length>=2 ? arr[1] : (arr[0] ?? null)
-    }
-    function deriveCoinForModal(items, map, selectedCoin, coinFromRow){
-      if (selectedCoin && selectedCoin !== 'ALL') return selectedCoin
-      if (coinFromRow) return coinFromRow
-      const best = items
-        .filter(it => String(it._map)===String(map) && parseMsMaybe(it._result)!=null)
-        .sort((a,b)=> parseMsMaybe(a._result)-parseMsMaybe(b._result))[0]
-      return best ? best._coin : null
-    }
-    function perkScore(meta){
-      const attrs = normalizeAttributes(meta)
-      const ignore = new Set(['COINTYPE','COIN','CURRENCY','MAPID','ROUND'])
-      return attrs.reduce((sum,a)=> (a.num!=null && a.num>0 && !ignore.has(String(a.label).toUpperCase())) ? sum + a.num : sum, 0)
-    }
-    // Coin icons & badges
-    function coinIcon(coin){
-      if(coin==null) return '🪙'
-      const k = String(coin).trim().toUpperCase()
-      const map = {
-        BTC:'₿', WBTC:'₿', TBTC:'₿',
-        ETH:'♦', WETH:'♦',
-        MATIC:'🟣', POL:'🟣', POLYGON:'🟣',
-        LINK:'🔗',
-        SOL:'◎',
-        BNB:'🟡',
-        AVAX:'🔺',
-        ADA:'🔵',
-        DOGE:'🐕',
-        XRP:'✖',
-        USDT:'🟩',
-        USDC:'🟦',
-        DAI:'🟨',
-        OP:'🟥',
-        ARB:'🟪'
-      }
-      return map[k] || '🪙'
-    }
-    function coinBadge(coin){
-      const icon = coinIcon(coin)
-      const label = (coin==null || String(coin).trim()==='') ? '—' : coin
-      return `<span class="inline-flex items-center gap-1.5 px-2 py-1 rounded-md bg-bg-800 border border-slate-700 text-slate-200"><span>${icon}</span><span>${label}</span></span>`
-    }
-
-    function byKeyCI(obj, key) {
-      if (!obj) return undefined
-      if (Array.isArray(obj)) return undefined
+    const byKeyCI = (obj, key) => {
+      if (!obj || Array.isArray(obj)) return undefined
       const found = Object.keys(obj).find(k => k.toLowerCase() === key.toLowerCase())
       return found ? obj[found] : undefined
     }
-
     function getAttr(meta, key) {
       if (!meta) return undefined
-      // attributes can be an array of {trait_type, value} or a simple object
       if (Array.isArray(meta.attributes)) {
         const a = meta.attributes.find(x => (x.trait_type||'').toLowerCase() === key.toLowerCase())
         return a ? (a.value ?? a.display_value ?? a.trait_value) : undefined
@@ -371,19 +331,15 @@ tailwind.config = {
         const v = byKeyCI(meta.attributes, key)
         if (v !== undefined) return v
       }
-      // Sometimes top-level fields exist
       const vTop = byKeyCI(meta, key)
       return vTop
     }
-
-    function parseMsMaybe(val) {
+    const parseMsMaybe = (val) => {
       if (val == null) return null
       const num = Number(val)
-      if (Number.isNaN(num)) return null
-      return num // expected to be milliseconds; example: 34248 -> 34.248 s
+      return Number.isNaN(num) ? null : num
     }
-
-    function fmtMs(ms) {
+    const fmtMs = (ms) => {
       if (ms == null) return '—'
       const totalMs = Math.max(0, Math.round(ms))
       const m = Math.floor(totalMs / 60000)
@@ -392,7 +348,6 @@ tailwind.config = {
       const pad = n => String(n).padStart(2,'0')
       return `${pad(m)}:${pad(s)}.${String(msR).padStart(3,'0')}`
     }
-
     function cleanName(nameOrEns, address) {
       if (nameOrEns && typeof nameOrEns === 'string') {
         let n = nameOrEns
@@ -403,22 +358,17 @@ tailwind.config = {
       if (!address) return 'Unbekannt'
       return address.slice(0,6) + '…' + address.slice(-4)
     }
-
-    function buildPill(labelHtml, value, active) {
-      const btn = document.createElement('button')
-      btn.className = 'px-3 py-1.5 rounded-full border text-sm whitespace-nowrap ' + (active ? 'bg-primary-600/20 border-primary-600 text-primary-300' : 'bg-bg-800 border-slate-700 hover:border-slate-600 text-slate-200')
-      btn.innerHTML = labelHtml
-      btn.dataset.value = value
-      return btn
+    function coinIcon(coin){
+      if(coin==null) return '🪙'
+      const k = String(coin).trim().toUpperCase()
+      const map = { BTC:'₿', WBTC:'₿', TBTC:'₿', ETH:'♦', WETH:'♦', MATIC:'🟣', POL:'🟣', POLYGON:'🟣', LINK:'🔗', SOL:'◎', BNB:'🟡', AVAX:'🔺', ADA:'🔵', DOGE:'🐕', XRP:'✖', USDT:'🟩', USDC:'🟦', DAI:'🟨', OP:'🟥', ARB:'🟪' }
+      return map[k] || '🪙'
     }
-
-    function buildNextUrl(baseUrl, nextParams) {
-      if (!nextParams) return null
-      const u = new URL(baseUrl)
-      Object.entries(nextParams).forEach(([k,v]) => u.searchParams.set(k, v))
-      return u.toString()
+    function coinBadge(coin){
+      const icon = coinIcon(coin)
+      const label = (coin==null || String(coin).trim()==='') ? '—' : coin
+      return `<span class="inline-flex items-center gap-1.5 px-2 py-1 rounded-md bg-bg-800 border border-slate-700 text-slate-200"><span>${icon}</span><span>${label}</span></span>`
     }
-
     function rowHtml(rank, item, bestMs) {
       const owner = item._ownerName || cleanName(item.owner?.ens_domain_name || item.owner?.name, item.owner?.hash)
       const addr  = item.owner?.hash
@@ -434,57 +384,70 @@ tailwind.config = {
           <td class="px-4 md:px-6 py-3 align-middle"><a href="${nftUrl}" target="_blank" class="text-primary-500 hover:underline">#${item.token_id || item.id}</a></td>
         </tr>`
     }
-
     function setSubtitle() {
       const coinText = state.selectedCoin === 'ALL' ? 'alle Währungen' : `Währung ${state.selectedCoin}`
-      boardSubtitle.textContent = `Runde ${state.selectedMap} • ${coinText}`
+      boardSubtitle.textContent = state.selectedMap ? `Runde ${state.selectedMap} • ${coinText}` : 'Bitte zuerst eine Runde wählen.'
     }
-
     function rebuildCoinPills() {
       coinFilter.innerHTML = ''
       const coins = ['ALL', ...Array.from(state.coins).sort((a,b)=>String(a).localeCompare(String(b)))]
       coins.forEach(c => {
         const labelHtml = c === 'ALL' ? '∑&nbsp;Alle' : `<span class="mr-1">${coinIcon(c)}</span>${c}`
-        const btn = buildPill(labelHtml, c, c === state.selectedCoin)
+        const btn = document.createElement('button')
+        btn.className = 'px-3 py-1.5 rounded-full border text-sm whitespace-nowrap ' + (c === state.selectedCoin ? 'bg-ink-600/20 border-ink-600 text-ink-400' : 'bg-bg-800 border-slate-700 hover:border-slate-600 text-slate-200')
+        btn.innerHTML = labelHtml
         btn.addEventListener('click', () => {
           state.selectedCoin = c
-          rebuildCoinPills()
           renderLeaderboard()
         })
         coinFilter.appendChild(btn)
       })
     }
-
     function rebuildMapSelect() {
-      const arr = Array.from(state.mapids).map(x => Number(x)).filter(n => !Number.isNaN(n)).sort((a,b)=>b-a)
+      const arr = Array.from(state.mapids).map(Number).filter(n => !Number.isNaN(n)).sort((a,b)=>b-a)
       mapSelect.innerHTML = arr.map(x => `<option value="${x}">${x}</option>`).join('')
-      if (!state.selectedMap && arr.length) state.selectedMap = pickDefaultMapId(state.mapids)
-      mapSelect.value = state.selectedMap ?? ''
+      if (arr.length) {
+        const highest = arr[0]
+        state.selectedMap = highest
+        mapSelect.value = highest
+        document.getElementById('heroMap').textContent = highest
+      }
       setSubtitle()
     }
-
-    // ----- Leaderboard computation (pure, testable)
     function computeLeaderboardFrom(items, selectedMap, selectedCoin) {
-      const bestMap = new Map()
+      // Return ALL runs for the selected map (and cointype filter if set), sorted by time.
+      const out = []
       const mapFilter = String(selectedMap)
       for (const it of items) {
         if (String(it._map) !== mapFilter) continue
         if (selectedCoin !== 'ALL' && String(it._coin) !== String(selectedCoin)) continue
-        const owner = it.owner?.hash || '0x0'
-        const key = (selectedCoin === 'ALL') ? `${owner}|${String(it._coin)}` : owner
         const currentMs = parseMsMaybe(it._result)
         if (currentMs == null) continue
-        const prev = bestMap.get(key)
-        if (!prev || currentMs < prev.ms) bestMap.set(key, { ms: currentMs, item: it })
+        out.push({ ms: currentMs, item: it })
       }
-      return Array.from(bestMap.values()).sort((a,b)=>a.ms-b.ms)
+      return out.sort((a,b)=>a.ms-b.ms)
     }
-
     function computeLeaderboard() {
       return computeLeaderboardFrom(state.items, state.selectedMap, state.selectedCoin)
     }
-
     function renderLeaderboard() {
+
+      // add inline loading to clicked player button & open modal immediately
+      function withRowSpinner(btn, fn){
+        if (!btn) return fn()
+        let sp = btn.querySelector('.row-inline-spinner')
+        if (!sp){
+          sp = document.createElement('span')
+          sp.className = 'row-inline-spinner'
+          btn.appendChild(sp)
+        }
+        btn.disabled = true
+        const done = () => { try{ btn.disabled = false; sp.remove() }catch{} }
+        const p = Promise.resolve().then(fn)
+        p.finally(done)
+        return p
+      }
+
       setSubtitle()
       const rows = computeLeaderboard()
       totalRows.textContent = rows.length
@@ -495,11 +458,11 @@ tailwind.config = {
       tableBody.querySelectorAll('button[data-player]').forEach(btn => {
         const coin = btn.dataset.playerCoin || null
         const map  = btn.dataset.playerMap || null
-        btn.addEventListener('click', () => openPlayer(btn.dataset.player, btn.dataset.playerName, coin, map))
+        btn.addEventListener('click', () => withRowSpinner(btn, () => openPlayer(btn.dataset.player, btn.dataset.playerName, coin, map)))
       })
     }
 
-    // ----- Perk NFT helpers
+    // ----- Perk NFT helpers (unchanged) -----
     function normalizeAttributes(meta){
       const out = []
       if (!meta) return out
@@ -518,44 +481,112 @@ tailwind.config = {
       }
       return out
     }
-
-    function renderPerkCard(item, context){
-      if (!item) { perkStatus.textContent = 'Kein Perk‑NFT gefunden.'; perkLink.classList.add('hidden'); perkWrap.innerHTML=''; return }
-      const id = item.token_id || item.id
-      perkLink.href = `${API_BASE}/token/${PERK_CONTRACT}/instance/${id}`
-      perkLink.classList.remove('hidden')
-      const ctx = []
-      if (context && context.map != null) ctx.push(`Runde ${context.map}`)
-      if (context && context.coin) ctx.push(String(context.coin))
-      perkStatus.textContent = `Token #${id}${ctx.length? ' • '+ctx.join(' • '):''}`
-      const meta = item.metadata || {}
+    function perkScore(meta){
       const attrs = normalizeAttributes(meta)
-        .filter(x => x.num != null && x.num > 0)
-        .sort((a,b)=> b.num - a.num)
-      if (!attrs.length){ perkWrap.innerHTML = '<div class="text-slate-400 text-sm">Keine Perks (>0) vorhanden.</div>'; return }
-      perkWrap.innerHTML = attrs.map(a => `
-        <div class="glass rounded-xl p-3 border border-slate-700">
-          <div class="text-xs text-slate-400">${a.label}</div>
-          <div class="text-2xl font-bold">${a.num}</div>
-        </div>`).join('')
+      const ignore = new Set(['COINTYPE','COIN','CURRENCY','MAPID','ROUND'])
+      return attrs.reduce((sum,a)=> (a.num!=null && a.num>0 && !ignore.has(String(a.label).toUpperCase())) ? sum + a.num : sum, 0)
+    }
+    function coinForContext(items, map, selectedCoin, coinFromRow){
+      if (selectedCoin && selectedCoin !== 'ALL') return selectedCoin
+      if (coinFromRow) return coinFromRow
+      const best = items
+        .filter(it => String(it._map)===String(map) && parseMsMaybe(it._result)!=null)
+        .sort((a,b)=> parseMsMaybe(a._result)-parseMsMaybe(b._result))[0]
+      return best ? best._coin : null
+    }
+    
+    // --------- Caches for speed ---------
+    const _perkCache = new Map(); // key: owner|map|coin  -> perk item or null
+    const _perkOwnerIndex = new Map(); // key: owner -> array of perk items (owner-scoped fetch)
+    const _erc20Decimals = new Map(); // contract -> decimals
+    const _erc20BalanceCache = new Map(); // key: contract|owner -> {raw, decimals, ts}
+
+    // Build a cache key
+    const cacheKey = (...parts) => parts.filter(Boolean).map(x => String(x).toLowerCase()).join('|')
+
+    // Try multiple owner-scoped endpoints (fast path). Returns array of items or null.
+    async function fetchPerkInstancesForOwner(owner){
+      const low = (owner||'').toLowerCase()
+      if (!low || low===ZERO) return []
+      if (_perkOwnerIndex.has(low)) return _perkOwnerIndex.get(low)
+
+      const candidates = [
+        // Blockscout-like owner->token instances
+        `${API_BASE}/api/v2/addresses/${low}/tokens/${PERK_CONTRACT}/instances?items_count=200`,
+        // Generic owner NFTs list with contract filter (if supported)
+        `${API_BASE}/api/v2/addresses/${low}/tokens?type=ERC-721&contract=${PERK_CONTRACT}&items_count=200`
+      ]
+
+      for (const url of candidates){
+        const j = await safeJson(url)
+        if (j && (Array.isArray(j.items) || Array.isArray(j.data))) {
+          const list = j.items || j.data
+          _perkOwnerIndex.set(low, list)
+          return list
+        }
+      }
+
+      // Fallback: empty marker to avoid repeated attempts
+      _perkOwnerIndex.set(low, [])
+      return []
     }
 
-    async function safeJson(url){
+    // ERC-20 helpers (GI)
+    async function getTokenDecimals(contract){
+      const key = contract.toLowerCase()
+      if (_erc20Decimals.has(key)) return _erc20Decimals.get(key)
+      // Etherscan/Blockscout compatible
+      const url = `${API_BASE}/api?module=token&action=getToken&contractaddress=${key}`
+      const j = await safeJson(url)
+      const d = Number(j?.result?.decimals ?? j?.decimals ?? j?.result?.tokenInfo?.decimals ?? 18)
+      const decimals = Number.isFinite(d) ? d : 18
+      _erc20Decimals.set(key, decimals)
+      return decimals
+    }
+
+    async function getErc20Balance(contract, owner){
+      const key = cacheKey(contract, owner)
+      const hit = _erc20BalanceCache.get(key)
+      const now = Date.now()
+      if (hit && (now - hit.ts) < 60_000) return hit // 60s cache
+
+      const url = `${API_BASE}/api?module=account&action=tokenbalance&contractaddress=${contract}&address=${owner}`
+      const j = await safeJson(url)
+      const raw = j?.result ?? j?.balance ?? '0'
+      const decimals = await getTokenDecimals(contract)
+      const entry = { raw, decimals, ts: now }
+      _erc20BalanceCache.set(key, entry)
+      return entry
+    }
+
+    function fmtUnits(raw, decimals){
+      try{
+        const bn = BigInt(String(raw))
+        const d = BigInt(decimals)
+        const base = BigInt(10) ** d
+        const whole = bn // integer already, we'll format manually
+        const s = whole.toString().padStart(Number(d)+1, '0')
+        const i = s.length - Number(d)
+        const intPart = s.slice(0, i)
+        let frac = s.slice(i).replace(/0+$/, '')
+        return frac ? `${intPart}.${frac}` : intPart
+      }catch{ return '0' }
+    }
+async function safeJson(url){
       try{ const r = await fetch(url); if(!r.ok) return null; return await r.json() }catch{ return null }
     }
-
     async function findPerkInstanceForOwner(address, map, coin){
-      const base = `${API_BASE}/api/v2/tokens/${PERK_CONTRACT}/instances`
-      let nextUrl = `${base}?items_count=200`
+      const ckey = cacheKey(address, map ?? '', coin ?? '')
+      if (_perkCache.has(ckey)) return _perkCache.get(ckey)
+
       const addr = (address||'').toLowerCase()
-      let guard = 0
       let best = null
       let bestScore = -1
-      while (nextUrl && guard < 50){
-        const j = await safeJson(nextUrl)
-        if (!j) break
-        const items = j.items || j.data || []
-        for (let it of items){
+
+      // ---- FAST PATH: owner-scoped fetch (usually a single request) ----
+      const ownerList = await fetchPerkInstancesForOwner(addr)
+      if (ownerList && ownerList.length){
+        for (let it of ownerList){
           const h = (it.owner?.hash||'').toLowerCase()
           if (!h || h === ZERO || h !== addr) continue
           if (!it.metadata && it.token_id){
@@ -570,18 +601,48 @@ tailwind.config = {
           const score = perkScore(meta)
           if (score > bestScore){ bestScore = score; best = it }
         }
-        nextUrl = buildNextUrl(base, j.next_page_params)
-        guard++
       }
+
+      // ---- FALLBACK: global scan only if nothing found via owner path ----
+      if (!best){
+        const base = `${API_BASE}/api/v2/tokens/${PERK_CONTRACT}/instances`
+        let nextUrl = `${base}?items_count=200`
+        let guard = 0
+        while (nextUrl && guard < 20){
+          const j = await safeJson(nextUrl)
+          if (!j) break
+          const items = j.items || j.data || []
+          for (let it of items){
+            const h = (it.owner?.hash||'').toLowerCase()
+            if (!h || h === ZERO || h !== addr) continue
+            if (!it.metadata && it.token_id){
+              const j2 = await safeJson(`${API_BASE}/api/v2/tokens/${PERK_CONTRACT}/instances/${it.token_id}`)
+              if (j2 && (j2.item || j2)) it = j2.item || j2
+            }
+            const meta = it.metadata || {}
+            const coinMeta = (getAttr(meta, 'cointype') ?? getAttr(meta,'coin') ?? getAttr(meta,'currency'))
+            const mapMeta  = (getAttr(meta, 'mapid') ?? getAttr(meta,'round'))
+            if (coin && String(coinMeta||'').toUpperCase() !== String(coin).toUpperCase()) continue
+            if (map != null && String(mapMeta) !== String(map)) continue
+            const score = perkScore(meta)
+            if (score > bestScore){ bestScore = score; best = it }
+          }
+          if (best) break; // early stop once a match found
+          nextUrl = j.next_page_params ? (()=>{ const u=new URL(base); Object.entries(j.next_page_params).forEach(([k,v])=>u.searchParams.set(k,v)); return u.toString() })() : null
+          guard++
+        }
+      }
+      _perkCache.set(ckey, best || null)
       return best
     }
-
     async function loadPerkNft(address, map, coin){
-      perkWrap.innerHTML = ''
+      perkSpinner && perkSpinner.classList.remove('hidden')
+      perkWrap.innerHTML = '<div class="perk-skeleton"></div>'
       perkStatus.textContent = 'Lade Perk‑NFT…'
       perkLink.classList.add('hidden')
       if (!address || address.toLowerCase() === ZERO){
         perkStatus.textContent = 'Ignoriere Zero‑Address.'
+        perkSpinner && perkSpinner.classList.add('hidden')
         return
       }
       const item = await findPerkInstanceForOwner(address, map, coin)
@@ -589,12 +650,29 @@ tailwind.config = {
         perkStatus.textContent = `Kein Perk‑NFT für Runde ${map ?? '—'}${coin? ' • '+coin:''} gefunden.`
         perkWrap.innerHTML = ''
         perkLink.classList.add('hidden')
+        perkSpinner && perkSpinner.classList.add('hidden')
         return 
       }
-      renderPerkCard(item, {map, coin})
+      const id = item.token_id || item.id
+      perkLink.href = `${API_BASE}/token/${PERK_CONTRACT}/instance/${id}`
+      perkLink.classList.remove('hidden')
+      const meta = item.metadata || {}
+      const attrs = normalizeAttributes(meta).filter(x => x.num != null && x.num > 0).sort((a,b)=> b.num - a.num)
+      perkStatus.textContent = `Token #${id}${map? ' • Runde '+map:''}${coin? ' • '+coin:''}`
+      perkSpinner && perkSpinner.classList.add('hidden')
+      perkWrap.innerHTML = attrs.length ? attrs.map(a => `
+        <div class="glass rounded-xl p-3 border border-slate-700">
+          <div class="text-xs text-slate-400">${a.label}</div>
+          <div class="text-2xl font-bold">${a.num}</div>
+        </div>`).join('') : '<div class="text-slate-400 text-sm">Keine Perks (>0) vorhanden.</div>'
     }
-
     async function openPlayer(address, name, coinFromRow, mapFromRow) {
+      // show modal immediately with placeholders
+      perkStatus.textContent = ''
+      perkWrap.innerHTML = ''
+      perkLink.classList.add('hidden')
+      playerModal.classList.remove('hidden')
+      giCard.classList.add('hidden'); giBalanceBig.textContent = '—'
       const list = state.items.filter(it => it.owner?.hash === address)
       const human = cleanName(name, address)
       playerTitle.textContent = human
@@ -603,7 +681,8 @@ tailwind.config = {
         .map(it => ({ map: it._map, coin: it._coin, ms: parseMsMaybe(it._result), id: it.token_id || it.id }))
         .filter(r => r.ms != null)
         .sort((a,b)=> a.ms-b.ms)
-      playerBody.innerHTML = rows.map(r => `
+      playerBody.innerHTML = '<tr><td colspan="4" class="px-4 md:px-6 py-3"><div class="perk-skeleton"></div></td></tr>'
+      ; playerBody.innerHTML = rows.map(r => `
         <tr>
           <td class="px-4 md:px-6 py-2">${r.map}</td>
           <td class="px-4 md:px-6 py-2">${coinBadge(r.coin)}</td>
@@ -612,8 +691,19 @@ tailwind.config = {
         </tr>`).join('') || `
         <tr><td colspan="4" class="px-4 md:px-6 py-6 text-slate-400">Keine Zeiten gefunden.</td></tr>`
       const mapForPerk = mapFromRow ?? state.selectedMap
-      const coinForPerk = deriveCoinForModal(list, mapForPerk, state.selectedCoin, coinFromRow)
+      const coinForPerk = coinForContext(list, mapForPerk, state.selectedCoin, coinFromRow)
       await loadPerkNft(address, mapForPerk, coinForPerk)
+
+      // GI balance
+      try{
+        if (address && address.toLowerCase() !== ZERO){
+          const bal = await getErc20Balance(GI_CONTRACT, address)
+          const human = fmtUnits(bal.raw, bal.decimals)
+          giBalanceBig.textContent = human
+          giCard.classList.remove('hidden')
+        }
+      }catch{}
+
       playerModal.classList.remove('hidden')
     }
 
@@ -629,182 +719,136 @@ tailwind.config = {
       if (hit) openPlayer(hit.owner.hash, cleanName(hit.owner?.ens_domain_name || hit.owner?.name, hit.owner?.hash), null, state.selectedMap)
     })
 
-    // Map navigation
-    mapSelect.addEventListener('change', (e) => { state.selectedMap = e.target.value; renderLeaderboard() })
-    prevMapBtn.addEventListener('click', ()=> stepMap(-1))
-    nextMapBtn.addEventListener('click', ()=> stepMap(+1))
-    function stepMap(delta){
-      const arr = Array.from(state.mapids).map(Number).filter(n=>!Number.isNaN(n)).sort((a,b)=>a-b)
-      const idx = arr.indexOf(Number(state.selectedMap))
-      const next = arr[idx + delta]
-      if (next != null) { state.selectedMap = next; mapSelect.value = next; renderLeaderboard() }
-    }
-
-    reloadBtn.addEventListener('click', () => { resetAndLoad() })
-    loadMoreBtn.addEventListener('click', () => { if (state.nextUrl) loadMore() })
-
-    function resetAndLoad(){
+    // ------------------ Load flow ------------------
+    function resetUiForNewMap(){
       state.items = []
-      state.mapids.clear()
       state.coins.clear()
-      state.nextUrl = null
-      state.baseListUrl = null
-      state.selectedMap = null
-      state.selectedCoin = 'ALL'
-      tableBody.innerHTML = ''
-      coinFilter.innerHTML = ''
-      mapSelect.innerHTML = ''
       totalRows.textContent = '0'
       loadedCount.textContent = '0'
-      loadMoreWrap.classList.add('hidden')
-      playerModal.classList.add('hidden')
-      start()
+      tableBody.innerHTML = ''
+      coinFilter.innerHTML = ''
+      state.selectedCoin = 'ALL'
+      rebuildCoinPills()
     }
 
-    // ------------------ Fetch + ingest ------------------
-    async function start(){
+    async function discoverMaps(maxPages = 8, itemsPerPage = 200){
+      // Lightweight pass to find available mapids and the highest mapid.
       loadingOverlay.classList.remove('hidden')
+      loadingPhase.textContent = 'Suche Runden… '
       progressText.textContent = ''
-
-      // 1) Token info (name)
-      try {
-        const rTok = await fetch(`${API_BASE}/api?module=token&action=getToken&contractaddress=${CONTRACT}`)
-        if (rTok.ok) {
-          const j = await rTok.json()
-          const name = j?.result?.name || 'Collection'
-          document.getElementById('tokenName').textContent = name
-        }
-      } catch {}
-
-      // 2) Load first page of instances (API v2)
+      state.mapids.clear()
       state.baseListUrl = `${API_BASE}/api/v2/tokens/${CONTRACT}/instances`
-      const firstUrl = new URL(state.baseListUrl)
-      firstUrl.searchParams.set('items_count', '100')
-      await loadFrom(firstUrl.toString())
-
-      if (!state.items.length) {
-        progressText.textContent = 'Keine NFTs gefunden. Prüfe Contract & API.'
-      }
-      loadingOverlay.classList.add('hidden')
-    }
-
-    async function loadFrom(url){
-      try{
-        const r = await fetch(url)
-        if (!r.ok) throw new Error(`HTTP ${r.status}`)
+      let nextUrl = `${state.baseListUrl}?items_count=${itemsPerPage}`
+      let pages = 0
+      while (nextUrl && pages < maxPages){
+        const r = await fetch(nextUrl)
+        if (!r.ok) break
         const j = await r.json()
-        const items = j?.items || j?.data || []
-        ingest(items)
-        loadedCount.textContent = state.items.length
-        // next page
-        state.nextUrl = buildNextUrl(state.baseListUrl, j?.next_page_params)
-        if (state.nextUrl) {
-          if (state.items.length < 2000) {
-            progressText.textContent = `Lade weiter… (${state.items.length})`
-            await loadFrom(state.nextUrl)
-          } else {
-            loadMoreWrap.classList.remove('hidden')
-            progressText.textContent = `Weitere Seiten verfügbar.`
-          }
-        } else {
-          loadMoreWrap.classList.add('hidden')
-          progressText.textContent = 'Fertig.'
-        }
-        rebuildMapSelect(); rebuildCoinPills(); renderLeaderboard()
-      } catch(e){
-        console.error(e)
-        progressText.textContent = 'Fehler beim Laden: ' + (e?.message||e)
-      }
-    }
-
-    async function loadMore(){
-      if (!state.nextUrl) return
-      loadingOverlay.classList.remove('hidden')
-      await loadFrom(state.nextUrl)
-      loadingOverlay.classList.add('hidden')
-    }
-
-    function ingest(items){
-      for (const it of items) {
-        try {
-          const meta = it?.metadata || {}
-          const result = parseMsMaybe(getAttr(meta, 'Result'))
-          const coin   = getAttr(meta, 'cointype') ?? getAttr(meta, 'coin') ?? getAttr(meta, 'currency')
+        const items = j.items || j.data || []
+        for (const it of items){
+          const meta = it.metadata || {}
           const mapid  = getAttr(meta, 'mapid') ?? getAttr(meta, 'round')
           if (mapid != null) state.mapids.add(Number(mapid))
-          if (coin  != null && String(coin).trim() !== '') state.coins.add(String(coin))
+        }
+        // next page
+        nextUrl = j.next_page_params ? (()=>{ const u=new URL(state.baseListUrl); Object.entries(j.next_page_params).forEach(([k,v])=>u.searchParams.set(k,v)); return u.toString() })() : null
+        pages++
+        progressText.textContent = `Seiten gescannt: ${pages}`
+      }
+      rebuildMapSelect()
+      loadingOverlay.classList.add('hidden')
+    }
+
+    async function loadMap(mapid, scanAllPages = true, itemsPerPage = 200){
+      if (!mapid) return
+      resetUiForNewMap()
+      loadingOverlay.classList.remove('hidden')
+      loadingPhase.textContent = 'Lade Zeiten… '
+      progressText.textContent = ''
+
+      const base = `${API_BASE}/api/v2/tokens/${CONTRACT}/instances`
+      let nextUrl = `${base}?items_count=${itemsPerPage}`
+      let pages = 0
+      let countKept = 0
+      while (nextUrl){
+        const r = await fetch(nextUrl)
+        if (!r.ok) break
+        const j = await r.json()
+        const items = j.items || j.data || []
+        for (const it of items){
+          const meta = it.metadata || {}
+          const result = parseMsMaybe(getAttr(meta, 'Result'))
+          const coin   = getAttr(meta, 'cointype') ?? getAttr(meta, 'coin') ?? getAttr(meta, 'currency')
+          const mId    = getAttr(meta, 'mapid') ?? getAttr(meta, 'round')
+          if (String(mId) !== String(mapid)) continue  // keep only selected map
           it._result = result
           it._coin   = coin ?? '—'
-          it._map    = mapid ?? '—'
-          if (it.owner) {
-            it._ownerName = cleanName(it.owner.ens_domain_name || it.owner.name, it.owner.hash)
-          }
+          it._map    = mId ?? '—'
+          if (it.owner) it._ownerName = cleanName(it.owner.ens_domain_name || it.owner.name, it.owner.hash)
           state.items.push(it)
-        } catch(err) {
-          console.warn('skip item', err)
+          if (coin != null && String(coin).trim() !== '') state.coins.add(String(coin))
+          countKept++
         }
+        // progress
+        pages++
+        loadedCount.textContent = state.items.length
+        progressText.textContent = `Seiten: ${pages} • Treffer: ${countKept}`
+
+        // next page
+        nextUrl = j.next_page_params ? (()=>{ const u=new URL(base); Object.entries(j.next_page_params).forEach(([k,v])=>u.searchParams.set(k,v)); return u.toString() })() : null
+        if (!scanAllPages && pages >= 10) break
       }
-      if (!state.selectedMap && state.mapids.size) {
-        state.selectedMap = pickDefaultMapId(state.mapids)
-      }
+
+      rebuildCoinPills()
+      renderLeaderboard()
+      loadingOverlay.classList.add('hidden')
     }
 
-    // ------------------ Tiny Tests (console) ------------------
-    function runTests(){
+    // Map navigation
+    mapSelect.addEventListener('change', async (e) => {
+      state.selectedMap = e.target.value
+      await loadMap(state.selectedMap)
+    })
+    prevMapBtn.addEventListener('click', async ()=> {
+      const arr = Array.from(state.mapids).map(Number).filter(n=>!Number.isNaN(n)).sort((a,b)=>a-b)
+      const idx = arr.indexOf(Number(state.selectedMap))
+      const next = arr[idx - 1]
+      if (next != null) { state.selectedMap = next; mapSelect.value = next; await loadMap(next) }
+    })
+    nextMapBtn.addEventListener('click', async ()=> {
+      const arr = Array.from(state.mapids).map(Number).filter(n=>!Number.isNaN(n)).sort((a,b)=>a-b)
+      const idx = arr.indexOf(Number(state.selectedMap))
+      const next = arr[idx + 1]
+      if (next != null) { state.selectedMap = next; mapSelect.value = next; await loadMap(next) }
+    })
+
+    reloadBtn.addEventListener('click', async () => {
+      await discoverMaps()            // re-scan rounds
+      if (state.selectedMap) await loadMap(state.selectedMap) // auto-load highest
+    })
+
+    // Kickoff: first discover mapids (quick), then auto-select & load the highest
+    ;(async function init(){
       try {
-        console.group('%cTests','color:#22D3EE')
-        // Bestehende Tests – nicht ändern
-        console.assert(parseMsMaybe('34248')===34248,'parseMsMaybe failed')
-        console.assert(fmtMs(34248)==='00:34.248','fmtMs failed')
-        console.assert(coinIcon('LINK')==='🔗','coinIcon LINK failed')
-        const mockOwner = (h)=>({owner:{hash:h}})
-        const mock = [
-          {_map:1,_coin:'LINK',_result:1000,...mockOwner('0xA')},
-          {_map:1,_coin:'ETH', _result: 900,...mockOwner('0xA')},
-          {_map:1,_coin:'ETH', _result:1100,...mockOwner('0xB')},
-          {_map:2,_coin:'ETH', _result: 500,...mockOwner('0xA')}
-        ]
-        let out = computeLeaderboardFrom(mock,1,'ALL')
-        console.assert(out.length===2,'ALL should allow duplicate owners by coin')
-        out = computeLeaderboardFrom(mock,1,'ETH')
-        console.assert(out.length===2 && out[0].ms===900,'ETH best per owner failed')
-        // Attribute‑Parsing
-        const attrs = normalizeAttributes({attributes:[{trait_type:'A',value:'3'},{trait_type:'B',value:'0'},{trait_type:'C',value:'7'}]})
-        const nums = attrs.filter(x=>x.num!=null).map(x=>x.num)
-        console.assert(nums.includes(3) && nums.includes(7),'normalizeAttributes numeric parse failed')
-
-        // Zusätzliche Tests (neu)
-        // buildNextUrl
-        const built = buildNextUrl('https://x/y', {page:'2',items_count:'100'})
-        console.assert(built.includes('page=2') && built.includes('items_count=100'), 'buildNextUrl failed')
-        // computeLeaderboardFrom: ALL vs einzelner Coin gleiche Länge bei disjunkten Coins
-        const mock2 = [
-          {_map:1,_coin:'AAA',_result:100,...mockOwner('0x1')},
-          {_map:1,_coin:'BBB',_result:200,...mockOwner('0x1')}
-        ]
-        const allL = computeLeaderboardFrom(mock2,1,'ALL').length
-        const aL = computeLeaderboardFrom(mock2,1,'AAA').length
-        const bL = computeLeaderboardFrom(mock2,1,'BBB').length
-        console.assert(allL===2 && aL===1 && bL===1, 'computeLeaderboardFrom length mismatch')
-
-        // Default map selection tests
-        console.assert(pickDefaultMapId(new Set([1,2,3]))===2,'pickDefaultMapId second latest failed')
-        console.assert(pickDefaultMapId(new Set([7]))===7,'pickDefaultMapId single failed')
-        // deriveCoinForModal tests
-        const lc = [
-          {_map:9,_coin:'ETH',_result:1000},
-          {_map:9,_coin:'BTC',_result:900},
-          {_map:8,_coin:'LINK',_result:800}
-        ]
-        console.assert(deriveCoinForModal(lc,9,'ALL',null)==='BTC','deriveCoinForModal best-in-map failed')
-        console.assert(deriveCoinForModal(lc,9,'ETH',null)==='ETH','deriveCoinForModal selectedCoin override failed')
-        console.groupEnd()
-      } catch(e) { console.warn('Tests error', e) }
-    }
-
-    // Kickoff
-    runTests()
-    start()
+        // Optional: token name
+        try {
+          const rTok = await fetch(`${API_BASE}/api?module=token&action=getToken&contractaddress=${CONTRACT}`)
+          if (rTok.ok) {
+            const j = await rTok.json()
+            const name = j?.result?.name || 'Collection'
+            const el = document.getElementById('tokenName')
+            if (el) el.textContent = name
+          }
+        } catch {}
+        await discoverMaps()       // fills mapSelect and picks highest
+        if (state.selectedMap) {   // respect "erst laden nachdem Runde ausgewählt" – we auto-select highest now
+          await loadMap(state.selectedMap)
+        }
+      } catch(e){
+        console.error(e)
+        alert('Fehler beim Initialisieren: ' + (e?.message || e))
+      }
+    })()
   })()
   </script>
 
