@@ -27,7 +27,7 @@
           boxShadow: {
             glow: '0 12px 28px rgba(255,102,0,0.25)',
             inset: 'inset 0 1px 0 rgba(255,255,255,0.05)',
-            card: '0 1px 0 rgba(255,255,255,.04), 0 8px 30px rgba(0,0,0,.35)'
+            card: '0 1px 0 rgba(0,0,0,.35)'
           },
           backdropBlur: { xs: '2px' }
         }
@@ -44,63 +44,58 @@
     html,body{background:var(--bg);}
     body{color:var(--text-soft); font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto;}
 
-    /* Glass/Glow */
     .glass{backdrop-filter:blur(8px); background:var(--card); border:1px solid var(--border)}
     .btn-ink{background:var(--ink);color:#0B0B0D;font-weight:800;letter-spacing:.02em;text-transform:uppercase}
     .btn-ink:hover{filter:brightness(1.04)}
     .btn-ghost{background:rgba(255,255,255,.04);border:1px solid var(--border)}
-    .pill{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);border-radius:9999px}
-    .pill-active{box-shadow:0 0 0 1px var(--ink) inset,0 0 18px rgba(255,102,0,.25);background:rgba(255,102,0,.10)}
     .badge{display:inline-flex;align-items:center;gap:.45rem;padding:.25rem .6rem;border-radius:.5rem;background:#111114;border:1px solid var(--border)}
     .ticker{font-variant-numeric:tabular-nums;letter-spacing:.03em;font-weight:800}
     .gi-badge{display:inline-flex;align-items:center;gap:.5rem;padding:.5rem .8rem;border-radius:0.875rem;background:linear-gradient(135deg, rgba(255,102,0,.15), rgba(255,122,26,.10));border:1px solid rgba(255,102,0,.35);box-shadow:0 0 0 1px rgba(255,102,0,.25) inset, 0 12px 28px rgba(255,102,0,.22); color:#fff;}
     .gi-badge .gi-dot{width:.6rem;height:.6rem;border-radius:9999px;background:#FF6600;box-shadow:0 0 12px rgba(255,102,0,.8)}
     .gi-badge .gi-val{font-variant-numeric:tabular-nums; font-weight:900; letter-spacing:.02em}
 
-    /* Mobile adjustments */
+    /* Layout optimizations */
+    .container-max{max-width:min(120rem, 96vw);} /* ~1920px cap, uses screen width better */
     .nav-wrap{padding-top:calc(var(--safe-top) + 6px);}
-    .top-actions{
-      display:flex; gap:.5rem; flex-wrap:wrap;
-    }
-    .top-actions > *{flex:1 1 120px; min-width:120px;}
+    .top-actions{display:flex; gap:.5rem; flex-wrap:wrap;}
+    .top-actions > *{flex:1 1 140px; min-width:140px;}
+
     .hero-title span{display:block; line-height:1; font-weight:900;}
     .hero-title .line-orange{color:var(--ink);}
     .hero-title .line-white{color:#fff;}
     .hero-title .line-outline{color:transparent;-webkit-text-stroke:1px rgba(255,255,255,0.3)}
-    .hero-title{
-      font-size: clamp(1.6rem, 6.2vw, 3.4rem);
-      letter-spacing: .01em;
-    }
-    /* Controls layout on mobile: stack input and button */
-    @media (max-width: 480px){
+    .hero-title{font-size: clamp(1.6rem, 6.2vw, 3.4rem); letter-spacing: .01em;}
+
+    table thead th{font-weight:700;color:#E5E7EB;letter-spacing:.02em;text-transform:uppercase; font-size:.75rem}
+    tbody td{padding-top:.6rem; padding-bottom:.6rem;}
+    tbody tr:hover td{background:rgba(255,255,255,.035)}
+
+    /* Spinners & skeletons */
+    .row-inline-spinner{display:inline-block;width:.9rem;height:.9rem;border-radius:9999px;border:2px solid rgba(255,255,255,.25);border-top-color:#FF6600;animation:spin 1s linear infinite;vertical-align:middle;margin-left:.4rem}
+    .perk-inline-spinner{display:inline-block;width:1rem;height:1rem;border-radius:9999px;border:2px solid rgba(255,255,255,.2);border-top-color:#FF6600;animation:spin 1s linear infinite;vertical-align:middle;margin-left:.5rem}
+    @keyframes spin{to{transform:rotate(360deg)}}
+    .perk-skeleton{height:2.25rem;border-radius:.75rem;background:linear-gradient(90deg, rgba(255,255,255,.06), rgba(255,255,255,.12), rgba(255,255,255,.06));background-size:200% 100%;animation:sk 1.2s linear infinite;}
+    @keyframes sk{0%{background-position:0% 0}100%{background-position:200% 0}}
+
+    /* Mobile tweaks */
+    @media (max-width: 640px){
       .controls-grid{display:grid; grid-template-columns: 1fr; gap: .9rem;}
       .search-row{display:grid; grid-template-columns: 1fr; gap:.6rem;}
       .search-row button{width:100%;}
       .coin-row{overflow-x:auto; -webkit-overflow-scrolling:touch; padding-bottom:.25rem;}
       .arrow-btn{padding:.6rem .7rem; border-radius:.7rem;}
     }
-    @media (min-width: 481px){
+    @media (min-width: 641px){
       .controls-grid{display:grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap:1rem;}
       .search-row{display:flex; align-items:center; gap:.5rem;}
     }
-
-    /* Table: compact row height on mobile */
-    table thead th{font-weight:700;color:#E5E7EB;letter-spacing:.02em;text-transform:uppercase; font-size:.75rem}
-    tbody td{padding-top:.6rem; padding-bottom:.6rem;}
-    tbody tr:hover td{background:rgba(255,255,255,.035)}
-  
-    .row-inline-spinner{display:inline-block;width:.9rem;height:.9rem;border-radius:9999px;border:2px solid rgba(255,255,255,.25);border-top-color:#FF6600;animation:spin 1s linear infinite;vertical-align:middle;margin-left:.4rem}
-    .perk-inline-spinner{display:inline-block;width:1rem;height:1rem;border-radius:9999px;border:2px solid rgba(255,255,255,.2);border-top-color:#FF6600;animation:spin 1s linear infinite;vertical-align:middle;margin-left:.5rem}
-    @keyframes spin{to{transform:rotate(360deg)}}
-    .perk-skeleton{height:2.25rem;border-radius:.75rem;background:linear-gradient(90deg, rgba(255,255,255,.06), rgba(255,255,255,.12), rgba(255,255,255,.06));background-size:200% 100%;animation:sk 1.2s linear infinite;}
-    @keyframes sk{0%{background-position:0% 0}100%{background-position:200% 0}}
   </style>
 </head>
 
 <body class="min-h-screen bg-bg-900 selection:bg-ink-500/30">
   <!-- Top bar -->
   <nav class="sticky top-0 z-40 bg-bg-900/80 backdrop-blur-xs border-b border-white/5 nav-wrap">
-    <div class="max-w-7xl mx-auto px-3 sm:px-4 pb-2">
+    <div class="container-max mx-auto px-3 sm:px-5 pb-2">
       <div class="h-10 flex items-center justify-between">
         <div class="flex items-center gap-2">
           <div class="h-6 w-6 rounded-md" style="background:linear-gradient(135deg,#1F1F22 0%, #342E2A 40%, #FF6600 100%);"></div>
@@ -108,6 +103,7 @@
         </div>
       </div>
       <div class="top-actions mt-2">
+        <!-- Removed: Golden Ink Holders button -->
         <a id="explorerLink" target="_blank" class="btn-ghost px-3 py-2 rounded-lg text-sm">Explorer öffnen</a>
         <button id="reloadBtn" class="btn-ghost px-3 py-2 rounded-lg text-sm">Neu laden</button>
       </div>
@@ -116,7 +112,7 @@
 
   <!-- Hero -->
   <header class="relative">
-    <div class="max-w-7xl mx-auto px-3 sm:px-4 py-6 md:py-10">
+    <div class="container-max mx-auto px-3 sm:px-5 py-6 md:py-10">
       <div class="flex flex-wrap gap-2 text-[10px] sm:text-xs uppercase tracking-widest">
         <span class="badge">CURRENT MAP <span id="heroMap" class="font-bold">—</span></span>
         <span class="badge">DEATH TOLL <span id="heroDeaths" class="font-bold">—</span></span>
@@ -129,7 +125,7 @@
         <span class="line-outline">STAMP IT.</span>
       </h1>
       <p class="text-textc-200 mt-2 text-sm sm:text-base">
-        NFT‑basierte Zeiten • Contract <code id="contractShort" class="text-textc-400"></code>
+        NFT-basierte Zeiten • Contract <code id="contractShort" class="text-textc-400"></code>
       </p>
       <div class="mt-4 flex flex-wrap gap-2 sm:gap-3">
         <a id="createPlyrId" target="_blank" class="btn-ink px-4 py-2 rounded-xl text-sm">Create my PLYR[ID]</a>
@@ -139,7 +135,7 @@
   </header>
 
   <!-- Controls -->
-  <section class="max-w-7xl mx-auto px-3 sm:px-4">
+  <section class="container-max mx-auto px-3 sm:px-5">
     <div class="glass rounded-xl sm:rounded-2xl p-3 sm:p-5 shadow-glow">
       <div class="controls-grid">
         <!-- Mapid -->
@@ -157,7 +153,7 @@
         <div>
           <label class="text-[13px] text-textc-200">Crew / Währung</label>
           <div id="coinFilter" class="coin-row mt-1 flex gap-2 overflow-x-auto pr-1 py-1"></div>
-          <p class="text-[12px] text-textc-400 mt-1">Eigenes Board je Währung + Gesamt‑Board.</p>
+          <p class="text-[12px] text-textc-400 mt-1">Eigenes Board je Währung + Gesamt-Board.</p>
         </div>
 
         <!-- Player search -->
@@ -173,35 +169,67 @@
     </div>
   </section>
 
-  <!-- Leaderboard -->
-  <main class="max-w-7xl mx-auto px-3 sm:px-4 mt-5 mb-28">
-    <div class="glass rounded-xl sm:rounded-2xl shadow-glow">
-      <div class="flex items-center justify-between px-3 sm:px-5 py-3 border-b border-white/5">
-        <div>
-          <h2 class="text-lg sm:text-2xl font-extrabold text-white">Leaderboard</h2>
-          <p id="boardSubtitle" class="text-textc-400 text-xs sm:text-sm"></p>
+  <!-- Leaderboards: Wide layout with responsive columns -->
+  <main class="container-max mx-auto px-3 sm:px-5 mt-5 mb-28">
+    <div class="grid gap-4 lg:gap-5 md:grid-cols-[2fr,1fr]">
+      <!-- Left: Zeiten-Leaderboard -->
+      <div>
+        <div class="glass rounded-xl sm:rounded-2xl shadow-glow">
+          <div class="flex items-center justify-between px-3 sm:px-5 py-3 border-b border-white/5">
+            <div>
+              <h2 class="text-lg sm:text-2xl font-extrabold text-white">Leaderboard</h2>
+              <p id="boardSubtitle" class="text-textc-400 text-xs sm:text-sm"></p>
+            </div>
+            <div class="text-xs sm:text-sm text-textc-400"><span id="totalRows">0</span> Einträge • <span id="loadedCount">0</span> NFTs geladen</div>
+          </div>
+
+          <div class="overflow-x-auto">
+            <table class="min-w-full text-left">
+              <thead class="bg-[#111114]">
+                <tr class="text-textc-200 text-[11px] sm:text-xs">
+                  <th class="px-3 sm:px-5 py-2">Platz</th>
+                  <th class="px-3 sm:px-5 py-2">Spieler</th>
+                  <th class="px-3 sm:px-5 py-2">Zeit</th>
+                  <th class="px-3 sm:px-5 py-2">Währung</th>
+                  <th class="px-3 sm:px-5 py-2">NFT</th>
+                </tr>
+              </thead>
+              <tbody id="tableBody" class="divide-y divide-white/5 text-[13px] sm:text-base"></tbody>
+            </table>
+          </div>
+
+          <div id="loadMoreWrap" class="flex items-center justify-center py-5 hidden">
+            <button id="loadMoreBtn" class="px-5 py-2 rounded-xl bg-bg-800 border border-border-900 hover:bg-[#1d1d22]">Mehr laden…</button>
+          </div>
         </div>
-        <div class="text-xs sm:text-sm text-textc-400"><span id="totalRows">0</span> Einträge • <span id="loadedCount">0</span> NFTs geladen</div>
       </div>
 
-      <div class="overflow-x-auto">
-        <table class="min-w-full text-left">
-          <thead class="bg-[#111114]">
-            <tr class="text-textc-200 text-[11px] sm:text-xs">
-              <th class="px-3 sm:px-5 py-2">Platz</th>
-              <th class="px-3 sm:px-5 py-2">Spieler</th>
-              <th class="px-3 sm:px-5 py-2">Zeit</th>
-              <th class="px-3 sm:px-5 py-2">Währung</th>
-              <th class="px-3 sm:px-5 py-2">NFT</th>
-            </tr>
-          </thead>
-          <tbody id="tableBody" class="divide-y divide-white/5 text-[13px] sm:text-base"></tbody>
-        </table>
-      </div>
+      <!-- Right: Golden Ink Holder (narrow column) -->
+      <aside>
+        <div class="glass rounded-xl sm:rounded-2xl shadow-glow">
+          <div class="flex items-center justify-between px-3 sm:px-5 py-3 border-b border-white/5">
+            <div>
+              <h2 class="text-lg sm:text-xl font-extrabold text-white">Golden Ink Holder</h2>
+              <p class="text-textc-400 text-xs sm:text-sm">Name & Anzahl (ohne Nachkommastellen)</p>
+            </div>
+            <div class="text-xs sm:text-sm text-textc-400"><span id="giCount">0</span></div>
+          </div>
 
-      <div id="loadMoreWrap" class="flex items-center justify-center py-5 hidden">
-        <button id="loadMoreBtn" class="px-5 py-2 rounded-xl bg-bg-800 border border-border-900 hover:bg-[#1d1d22]">Mehr laden…</button>
-      </div>
+          <div class="overflow-x-auto">
+            <table class="min-w-full text-left">
+              <thead class="bg-[#111114]">
+                <tr class="text-textc-200 text-[11px] sm:text-xs">
+                  <th class="px-3 sm:px-5 py-2">Spieler</th>
+                  <th class="px-3 sm:px-5 py-2">GI</th>
+                </tr>
+              </thead>
+              <tbody id="giHolderBody" class="divide-y divide-white/5 text-[13px] sm:text-base">
+                <tr><td colspan="2" class="px-4 md:px-6 py-6 text-textc-400">Lade…</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </aside>
     </div>
   </main>
 
@@ -216,7 +244,6 @@
           <div id="giCard" class="mt-2 hidden">
             <div class="gi-badge"><span class="gi-dot"></span><span>Golden Ink</span><span class="gi-val" id="giBalanceBig">—</span></div>
           </div>
-          
         </div>
         <button id="closePlayer" class="px-3 py-2 rounded-lg bg-bg-800 border border-border-900">Schließen</button>
       </div>
@@ -235,7 +262,7 @@
 
         <div class="mt-5">
           <div class="flex items-center justify-between">
-            <h4 class="text-base sm:text-lg font-semibold">Perk‑NFT <span id="perkSpinner" class="perk-inline-spinner hidden"></span></h4>
+            <h4 class="text-base sm:text-lg font-semibold">Perk-NFT <span id="perkSpinner" class="perk-inline-spinner hidden"></span></h4>
             <a id="perkLink" target="_blank" class="text-ink-400 hover:underline hidden">Zum NFT</a>
           </div>
           <div id="perkStatus" class="text-textc-400 text-xs sm:text-sm mt-1"></div>
@@ -256,7 +283,7 @@
     </div>
   </div>
 
-  <!-- JS -->
+  <!-- JS (bestehend) -->
   <script>
   ;(() => {
     const API_BASE = 'https://explorer.plyr.network'
@@ -267,13 +294,11 @@
 
     // ------------------ State ------------------
     const state = {
-      items: [],          // NFTs for the SELECTED map only
-      mapids: new Set(),  // All mapids discovered (from lightweight discovery pass)
-      coins: new Set(),   // Coins for current map
+      items: [],
+      mapids: new Set(),
+      coins: new Set(),
       selectedMap: null,
       selectedCoin: 'ALL',
-
-      // pagination helpers
       baseListUrl: null,
       nextUrl: null
     }
@@ -306,16 +331,14 @@
     const perkWrap      = document.getElementById('perkWrap')
     const perkStatus    = document.getElementById('perkStatus')
     const perkLink      = document.getElementById('perkLink')
-    const perkSpinner  = document.getElementById('perkSpinner')
+    const perkSpinner   = document.getElementById('perkSpinner')
 
     const giCard       = document.getElementById('giCard')
     const giBalanceBig = document.getElementById('giBalanceBig')
 
-    // Init header refs
     contractShort.textContent = CONTRACT.slice(0,8) + '…' + CONTRACT.slice(-6)
     explorerLink.href = `${API_BASE}/token/${CONTRACT}`
 
-    // ------------------ Helpers ------------------
     const byKeyCI = (obj, key) => {
       if (!obj || Array.isArray(obj)) return undefined
       const found = Object.keys(obj).find(k => k.toLowerCase() === key.toLowerCase())
@@ -415,7 +438,6 @@
       setSubtitle()
     }
     function computeLeaderboardFrom(items, selectedMap, selectedCoin) {
-      // Return ALL runs for the selected map (and cointype filter if set), sorted by time.
       const out = []
       const mapFilter = String(selectedMap)
       for (const it of items) {
@@ -431,8 +453,6 @@
       return computeLeaderboardFrom(state.items, state.selectedMap, state.selectedCoin)
     }
     function renderLeaderboard() {
-
-      // add inline loading to clicked player button & open modal immediately
       function withRowSpinner(btn, fn){
         if (!btn) return fn()
         let sp = btn.querySelector('.row-inline-spinner')
@@ -454,7 +474,6 @@
       loadedCount.textContent = state.items.length
       tableBody.innerHTML = rows.map((r, i) => rowHtml(i+1, r.item, r.ms)).join('')
 
-      // wire player buttons
       tableBody.querySelectorAll('button[data-player]').forEach(btn => {
         const coin = btn.dataset.playerCoin || null
         const map  = btn.dataset.playerMap || null
@@ -462,7 +481,6 @@
       })
     }
 
-    // ----- Perk NFT helpers (unchanged) -----
     function normalizeAttributes(meta){
       const out = []
       if (!meta) return out
@@ -494,26 +512,23 @@
         .sort((a,b)=> parseMsMaybe(a._result)-parseMsMaybe(b._result))[0]
       return best ? best._coin : null
     }
-    
-    // --------- Caches for speed ---------
-    const _perkCache = new Map(); // key: owner|map|coin  -> perk item or null
-    const _perkOwnerIndex = new Map(); // key: owner -> array of perk items (owner-scoped fetch)
-    const _erc20Decimals = new Map(); // contract -> decimals
-    const _erc20BalanceCache = new Map(); // key: contract|owner -> {raw, decimals, ts}
 
-    // Build a cache key
+    const _perkCache = new Map();
+    const _perkOwnerIndex = new Map();
+    const _erc20Decimals = new Map();
+    const _erc20BalanceCache = new Map();
     const cacheKey = (...parts) => parts.filter(Boolean).map(x => String(x).toLowerCase()).join('|')
 
-    // Try multiple owner-scoped endpoints (fast path). Returns array of items or null.
+    async function safeJson(url){
+      try{ const r = await fetch(url); if(!r.ok) return null; return await r.json() }catch{ return null }
+    }
     async function fetchPerkInstancesForOwner(owner){
       const low = (owner||'').toLowerCase()
       if (!low || low===ZERO) return []
       if (_perkOwnerIndex.has(low)) return _perkOwnerIndex.get(low)
 
       const candidates = [
-        // Blockscout-like owner->token instances
         `${API_BASE}/api/v2/addresses/${low}/tokens/${PERK_CONTRACT}/instances?items_count=200`,
-        // Generic owner NFTs list with contract filter (if supported)
         `${API_BASE}/api/v2/addresses/${low}/tokens?type=ERC-721&contract=${PERK_CONTRACT}&items_count=200`
       ]
 
@@ -525,31 +540,24 @@
           return list
         }
       }
-
-      // Fallback: empty marker to avoid repeated attempts
       _perkOwnerIndex.set(low, [])
       return []
     }
-
-    // ERC-20 helpers (GI)
     async function getTokenDecimals(contract){
       const key = contract.toLowerCase()
       if (_erc20Decimals.has(key)) return _erc20Decimals.get(key)
-      // Etherscan/Blockscout compatible
-      const url = `${API_BASE}/api?module=token&action=getToken&contractaddress=${key}`
+      const url = `${API_BASE}/api?module=token&action=getToken&contractaddress=${contract}`
       const j = await safeJson(url)
       const d = Number(j?.result?.decimals ?? j?.decimals ?? j?.result?.tokenInfo?.decimals ?? 18)
       const decimals = Number.isFinite(d) ? d : 18
       _erc20Decimals.set(key, decimals)
       return decimals
     }
-
     async function getErc20Balance(contract, owner){
       const key = cacheKey(contract, owner)
       const hit = _erc20BalanceCache.get(key)
       const now = Date.now()
-      if (hit && (now - hit.ts) < 60_000) return hit // 60s cache
-
+      if (hit && (now - hit.ts) < 60_000) return hit
       const url = `${API_BASE}/api?module=account&action=tokenbalance&contractaddress=${contract}&address=${owner}`
       const j = await safeJson(url)
       const raw = j?.result ?? j?.balance ?? '0'
@@ -558,32 +566,25 @@
       _erc20BalanceCache.set(key, entry)
       return entry
     }
-
     function fmtUnits(raw, decimals){
       try{
         const bn = BigInt(String(raw))
         const d = BigInt(decimals)
-        const base = BigInt(10) ** d
-        const whole = bn // integer already, we'll format manually
-        const s = whole.toString().padStart(Number(d)+1, '0')
-        const i = s.length - Number(d)
-        const intPart = s.slice(0, i)
-        let frac = s.slice(i).replace(/0+$/, '')
+        const s = bn.toString()
+        if (decimals === 0) return s
+        const pad = s.padStart(Number(d)+1, '0')
+        const i = pad.length - Number(d)
+        const intPart = pad.slice(0, i)
+        let frac = pad.slice(i).replace(/0+$/, '')
         return frac ? `${intPart}.${frac}` : intPart
       }catch{ return '0' }
-    }
-async function safeJson(url){
-      try{ const r = await fetch(url); if(!r.ok) return null; return await r.json() }catch{ return null }
     }
     async function findPerkInstanceForOwner(address, map, coin){
       const ckey = cacheKey(address, map ?? '', coin ?? '')
       if (_perkCache.has(ckey)) return _perkCache.get(ckey)
-
       const addr = (address||'').toLowerCase()
-      let best = null
-      let bestScore = -1
+      let best = null, bestScore = -1
 
-      // ---- FAST PATH: owner-scoped fetch (usually a single request) ----
       const ownerList = await fetchPerkInstancesForOwner(addr)
       if (ownerList && ownerList.length){
         for (let it of ownerList){
@@ -603,7 +604,6 @@ async function safeJson(url){
         }
       }
 
-      // ---- FALLBACK: global scan only if nothing found via owner path ----
       if (!best){
         const base = `${API_BASE}/api/v2/tokens/${PERK_CONTRACT}/instances`
         let nextUrl = `${base}?items_count=200`
@@ -627,7 +627,7 @@ async function safeJson(url){
             const score = perkScore(meta)
             if (score > bestScore){ bestScore = score; best = it }
           }
-          if (best) break; // early stop once a match found
+          if (best) break
           nextUrl = j.next_page_params ? (()=>{ const u=new URL(base); Object.entries(j.next_page_params).forEach(([k,v])=>u.searchParams.set(k,v)); return u.toString() })() : null
           guard++
         }
@@ -638,16 +638,16 @@ async function safeJson(url){
     async function loadPerkNft(address, map, coin){
       perkSpinner && perkSpinner.classList.remove('hidden')
       perkWrap.innerHTML = '<div class="perk-skeleton"></div>'
-      perkStatus.textContent = 'Lade Perk‑NFT…'
+      perkStatus.textContent = 'Lade Perk-NFT…'
       perkLink.classList.add('hidden')
       if (!address || address.toLowerCase() === ZERO){
-        perkStatus.textContent = 'Ignoriere Zero‑Address.'
+        perkStatus.textContent = 'Ignoriere Zero-Address.'
         perkSpinner && perkSpinner.classList.add('hidden')
         return
       }
       const item = await findPerkInstanceForOwner(address, map, coin)
       if (!item){ 
-        perkStatus.textContent = `Kein Perk‑NFT für Runde ${map ?? '—'}${coin? ' • '+coin:''} gefunden.`
+        perkStatus.textContent = `Kein Perk-NFT für Runde ${map ?? '—'}${coin? ' • '+coin:''} gefunden.`
         perkWrap.innerHTML = ''
         perkLink.classList.add('hidden')
         perkSpinner && perkSpinner.classList.add('hidden')
@@ -667,7 +667,6 @@ async function safeJson(url){
         </div>`).join('') : '<div class="text-slate-400 text-sm">Keine Perks (>0) vorhanden.</div>'
     }
     async function openPlayer(address, name, coinFromRow, mapFromRow) {
-      // show modal immediately with placeholders
       perkStatus.textContent = ''
       perkWrap.innerHTML = ''
       perkLink.classList.add('hidden')
@@ -694,7 +693,6 @@ async function safeJson(url){
       const coinForPerk = coinForContext(list, mapForPerk, state.selectedCoin, coinFromRow)
       await loadPerkNft(address, mapForPerk, coinForPerk)
 
-      // GI balance
       try{
         if (address && address.toLowerCase() !== ZERO){
           const bal = await getErc20Balance(GI_CONTRACT, address)
@@ -719,7 +717,6 @@ async function safeJson(url){
       if (hit) openPlayer(hit.owner.hash, cleanName(hit.owner?.ens_domain_name || hit.owner?.name, hit.owner?.hash), null, state.selectedMap)
     })
 
-    // ------------------ Load flow ------------------
     function resetUiForNewMap(){
       state.items = []
       state.coins.clear()
@@ -732,7 +729,6 @@ async function safeJson(url){
     }
 
     async function discoverMaps(maxPages = 8, itemsPerPage = 200){
-      // Lightweight pass to find available mapids and the highest mapid.
       loadingOverlay.classList.remove('hidden')
       loadingPhase.textContent = 'Suche Runden… '
       progressText.textContent = ''
@@ -750,7 +746,6 @@ async function safeJson(url){
           const mapid  = getAttr(meta, 'mapid') ?? getAttr(meta, 'round')
           if (mapid != null) state.mapids.add(Number(mapid))
         }
-        // next page
         nextUrl = j.next_page_params ? (()=>{ const u=new URL(state.baseListUrl); Object.entries(j.next_page_params).forEach(([k,v])=>u.searchParams.set(k,v)); return u.toString() })() : null
         pages++
         progressText.textContent = `Seiten gescannt: ${pages}`
@@ -780,7 +775,7 @@ async function safeJson(url){
           const result = parseMsMaybe(getAttr(meta, 'Result'))
           const coin   = getAttr(meta, 'cointype') ?? getAttr(meta, 'coin') ?? getAttr(meta, 'currency')
           const mId    = getAttr(meta, 'mapid') ?? getAttr(meta, 'round')
-          if (String(mId) !== String(mapid)) continue  // keep only selected map
+          if (String(mId) !== String(mapid)) continue
           it._result = result
           it._coin   = coin ?? '—'
           it._map    = mId ?? '—'
@@ -789,12 +784,10 @@ async function safeJson(url){
           if (coin != null && String(coin).trim() !== '') state.coins.add(String(coin))
           countKept++
         }
-        // progress
         pages++
         loadedCount.textContent = state.items.length
         progressText.textContent = `Seiten: ${pages} • Treffer: ${countKept}`
 
-        // next page
         nextUrl = j.next_page_params ? (()=>{ const u=new URL(base); Object.entries(j.next_page_params).forEach(([k,v])=>u.searchParams.set(k,v)); return u.toString() })() : null
         if (!scanAllPages && pages >= 10) break
       }
@@ -804,7 +797,6 @@ async function safeJson(url){
       loadingOverlay.classList.add('hidden')
     }
 
-    // Map navigation
     mapSelect.addEventListener('change', async (e) => {
       state.selectedMap = e.target.value
       await loadMap(state.selectedMap)
@@ -823,14 +815,12 @@ async function safeJson(url){
     })
 
     reloadBtn.addEventListener('click', async () => {
-      await discoverMaps()            // re-scan rounds
-      if (state.selectedMap) await loadMap(state.selectedMap) // auto-load highest
+      await discoverMaps()
+      if (state.selectedMap) await loadMap(state.selectedMap)
     })
 
-    // Kickoff: first discover mapids (quick), then auto-select & load the highest
     ;(async function init(){
       try {
-        // Optional: token name
         try {
           const rTok = await fetch(`${API_BASE}/api?module=token&action=getToken&contractaddress=${CONTRACT}`)
           if (rTok.ok) {
@@ -840,13 +830,95 @@ async function safeJson(url){
             if (el) el.textContent = name
           }
         } catch {}
-        await discoverMaps()       // fills mapSelect and picks highest
-        if (state.selectedMap) {   // respect "erst laden nachdem Runde ausgewählt" – we auto-select highest now
+        await discoverMaps()
+        if (state.selectedMap) {
           await loadMap(state.selectedMap)
         }
       } catch(e){
         console.error(e)
         alert('Fehler beim Initialisieren: ' + (e?.message || e))
+      }
+    })()
+  })()
+  </script>
+
+  <!-- Holder-Leaderboard (neu, getrennt) -->
+  <script>
+  ;(() => {
+    const API_BASE = 'https://explorer.plyr.network'
+    const GI = '0xEa547F310f6A9dFdB10eEAa03b76EBa8D8eCDc58'.toLowerCase()
+
+    const giHolderBody = document.getElementById('giHolderBody')
+    const giCountEl = document.getElementById('giCount')
+    if (!giHolderBody) return
+
+    async function safeJson(url){
+      try{ const r = await fetch(url); if(!r.ok) return null; return await r.json() }catch{ return null }
+    }
+    function shorten(addr){ return addr ? addr.slice(0,6) + '…' + addr.slice(-4) : '—' }
+    function cleanName(name){
+      if (!name) return null
+      let n = String(name)
+      if (n.endsWith('.plyr')) n = n.slice(0, -5)
+      if (n.endsWith('.eth'))  n = n.slice(0, -4)
+      return n
+    }
+    function formatUnitsInt(raw, decimals){
+      try{
+        const bn = BigInt(String(raw))
+        const base = BigInt(10) ** BigInt(decimals)
+        return (bn / base).toString()
+      }catch{ return '0' }
+    }
+
+    async function getDecimals(){
+      const j = await safeJson(`${API_BASE}/api?module=token&action=getToken&contractaddress=${GI}`)
+      const d = Number(j?.result?.decimals ?? 18)
+      return Number.isFinite(d) ? d : 18
+    }
+
+    async function fetchHolders(limit=50){
+      const out = []
+      const base = `${API_BASE}/api/v2/tokens/${GI}/holders`
+      let url = `${base}?items_count=200`
+      let guard = 0
+      while (url && out.length < limit && guard < 10){
+        const j = await safeJson(url)
+        if (!j) break
+        const items = j.items || j.data || []
+        for (const it of items){
+          const addr = it.address?.hash || it.address_hash
+          out.push({
+            address: addr,
+            raw: it.value ?? it.balance ?? '0',
+            name: cleanName(it.address?.name || it.address?.ens_domain_name || null)
+          })
+          if (out.length >= limit) break
+        }
+        if (out.length >= limit) break
+        url = j.next_page_params ? (()=>{ const u=new URL(base); Object.entries(j.next_page_params).forEach(([k,v])=>u.searchParams.set(k,v)); return u.toString() })() : null
+        guard++
+      }
+      return out.filter(h=>h.address)
+    }
+
+    ;(async function initHolders(){
+      try{
+        const [holders, decimals] = await Promise.all([fetchHolders(50), getDecimals()])
+        giCountEl.textContent = holders.length
+
+        giHolderBody.innerHTML = holders.map(h => {
+          const display = h.name || shorten(h.address)
+          const giInt = formatUnitsInt(h.raw, decimals)
+          return `
+            <tr class="hover:bg-white/5">
+              <td class="px-4 md:px-6 py-3"><span class="font-medium">${display}</span></td>
+              <td class="px-4 md:px-6 py-3 font-mono">${giInt}</td>
+            </tr>`
+        }).join('')
+      } catch(e){
+        giHolderBody.innerHTML = `<tr><td colspan="2" class="px-4 md:px-6 py-6 text-red-300">Fehler beim Laden der Holder.</td></tr>`
+        console.error(e)
       }
     })()
   })()
