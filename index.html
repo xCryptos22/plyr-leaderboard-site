@@ -76,6 +76,10 @@
     .perk-skeleton{height:2.25rem;border-radius:.75rem;background:linear-gradient(90deg, rgba(255,255,255,.06), rgba(255,255,255,.12), rgba(255,255,255,.06));background-size:200% 100%;animation:sk 1.2s linear infinite;}
     @keyframes sk{0%{background-position:0% 0}100%{background-position:200% 0}}
 
+    
+    .coin-row{display:flex; gap:.5rem; overflow-x:auto; -webkit-overflow-scrolling:touch; overscroll-behavior-x:contain; padding-bottom:.25rem;}
+    .coin-row > *{flex:0 0 auto;}
+
     /* Mobile */
     @media (max-width: 640px){
       .controls-grid{display:grid; grid-template-columns: 1fr; gap: .9rem;}
@@ -389,8 +393,10 @@
       if(coin==null) return '🪙'
       const k = String(coin).trim().toUpperCase()
       const map = { BTC:'₿', WBTC:'₿', TBTC:'₿', ETH:'♦', WETH:'♦', MATIC:'🟣', POL:'🟣', POLYGON:'🟣', LINK:'🔗', SOL:'◎', BNB:'🟡', AVAX:'🔺', ADA:'🔵', DOGE:'🐕', XRP:'✖', USDT:'🟩', USDC:'🟦', DAI:'🟨', OP:'🟥', ARB:'🟪' }
-      return map[k] || '🪙'
+      
+    return map[k] || '🪙'
     }
+    function canonCoin(c){ return String(c==null? '': c).trim().toUpperCase(); }
     function coinBadge(coin){
       const icon = coinIcon(coin)
       const label = (coin==null || String(coin).trim()==='') ? '—' : coin
@@ -417,14 +423,20 @@
     }
     function rebuildCoinPills() {
       coinFilter.innerHTML = ''
-      const coins = ['ALL', ...Array.from(state.coins).sort((a,b)=>String(a).localeCompare(String(b)))]
+      const coins = ['ALL', ...Array.from(state.coins).map(c => String(c).trim()).filter(Boolean).sort((a,b)=>a.localeCompare(b))]
+      const activeKey = canonCoin(state.selectedCoin)
+
       coins.forEach(c => {
-        const labelHtml = c === 'ALL' ? '∑&nbsp;Alle' : `<span class="mr-1">${coinIcon(c)}</span>${c}`
+        const key = canonCoin(c)
+        const isAll = key === 'ALL'
+        const label = isAll ? 'ALL' : c
+        const labelHtml = isAll ? '∑&nbsp;Alle' : `<span class="mr-1">${coinIcon(label)}</span>${label}`
         const btn = document.createElement('button')
-        btn.className = 'px-3 py-1.5 rounded-full border text-sm whitespace-nowrap ' + (c === state.selectedCoin ? 'bg-ink-600/20 border-ink-600 text-ink-400' : 'bg-bg-800 border-slate-700 hover:border-slate-600 text-slate-200')
+        btn.className = 'px-3 py-1.5 rounded-full border text-sm whitespace-nowrap ' + (key === activeKey ? 'bg-ink-600/20 border-ink-600 text-ink-400' : 'bg-bg-800 border-slate-700 hover:border-slate-600 text-slate-200')
         btn.innerHTML = labelHtml
         btn.addEventListener('click', () => {
-          state.selectedCoin = c
+          state.selectedCoin = isAll ? 'ALL' : label
+          rebuildCoinPills()
           renderLeaderboard()
         })
         coinFilter.appendChild(btn)
@@ -447,7 +459,7 @@
       const mapFilter = String(selectedMap)
       for (const it of items) {
         if (String(it._map) !== mapFilter) continue
-        if (selectedCoin !== 'ALL' && String(it._coin) !== String(selectedCoin)) continue
+        if (canonCoin(selectedCoin) !== 'ALL' && canonCoin(it._coin) !== canonCoin(selectedCoin)) continue
         const currentMs = parseMsMaybe(it._result)
         if (currentMs == null) continue
         out.push({ ms: currentMs, item: it })
