@@ -161,7 +161,7 @@
             <button id="prevMap" title="Vorherige Runde" class="arrow-btn px-2.5 py-2 rounded-lg bg-bg-800 border border-border-900 hover:bg-[#1d1d22]">◀</button>
             <button id="nextMap" title="Nächste Runde" class="arrow-btn px-2.5 py-2 rounded-lg bg-bg-800 border border-border-900 hover:bg-[#1d1d22]">▶</button>
           </div>
-          <p class="text-[12px] text-textc-400 mt-1">Standard: höchste Runde</p>
+          <p class="text-[12px] text-textc-400 mt-1">Standard: höchste Runde (Auswahl auf die höchsten 2 Runden begrenzt)</p>
         </div>
 
         <!-- Cointype Filter -->
@@ -452,13 +452,18 @@
       })
     }
     function rebuildMapSelect() {
+      // Build array of discovered mapids, sort descending and take top 2 only.
       const arr = Array.from(state.mapids).map(Number).filter(n => !Number.isNaN(n)).sort((a,b)=>b-a)
-      mapSelect.innerHTML = arr.map(x => `<option value="${x}">${x}</option>`).join('')
-      if (arr.length) {
-        const highest = arr[0]
+      const topTwo = arr.slice(0, 2) // <-- Beschränkung auf höchste 2 Runden
+      mapSelect.innerHTML = topTwo.map(x => `<option value="${x}">${x}</option>`).join('')
+      if (topTwo.length) {
+        const highest = topTwo[0]
         state.selectedMap = highest
         mapSelect.value = highest
         document.getElementById('heroMap').textContent = highest
+      } else {
+        state.selectedMap = null
+        document.getElementById('heroMap').textContent = '—'
       }
       setSubtitle()
     }
@@ -760,7 +765,7 @@
         const name = cleanName(it.owner?.ens_domain_name || it.owner?.name, it.owner?.hash).toLowerCase()
         return name === q || name.includes(q) || (it.owner?.hash||'').toLowerCase() === q
       })
-      if (hit) openPlayer(hit.owner.hash, cleanName(hit.owner?.ens_domain_name || it.owner?.name, it.owner?.hash), null, state.selectedMap)
+      if (hit) openPlayer(hit.owner.hash, cleanName(hit.owner?.ens_domain_name || it.owner?.name, hit.owner?.hash), null, state.selectedMap)
     })
 
     // ------------------ Load flow ------------------
@@ -777,6 +782,7 @@
 
     async function discoverMaps(maxPages = 8, itemsPerPage = 200){
       // Lightweight pass to find available mapids and the highest mapid.
+      // Änderung: abbrechen sobald >= 2 mapids gefunden wurden -> begrenzt Requests
       loadingOverlay.classList.remove('hidden')
       loadingPhase.textContent = 'Suche Runden… '
       progressText.textContent = ''
@@ -798,6 +804,8 @@
         nextUrl = j.next_page_params ? (()=>{ const u=new URL(state.baseListUrl); Object.entries(j.next_page_params).forEach(([k,v])=>u.searchParams.set(k,v)); return u.toString() })() : null
         pages++
         progressText.textContent = `Seiten gescannt: ${pages}`
+        // EARLY EXIT: sobald wir mindestens 2 verschiedene Runden gefunden haben, brauchen wir nicht weiter zu scannen
+        if (state.mapids.size >= 2) break
       }
       rebuildMapSelect()
       loadingOverlay.classList.add('hidden')
@@ -867,7 +875,7 @@
     })
 
     reloadBtn.addEventListener('click', async () => {
-      await discoverMaps()            // re-scan rounds
+      await discoverMaps()            // re-scan rounds (beschränkt auf höchste 2)
       if (state.selectedMap) await loadMap(state.selectedMap) // auto-load highest
     })
 
@@ -884,7 +892,7 @@
             if (el) el.textContent = name
           }
         } catch {}
-        await discoverMaps()       // fills mapSelect and picks highest
+        await discoverMaps()       // fills mapSelect and picks highest (of top 2)
         if (state.selectedMap) {
           await loadMap(state.selectedMap)
         }
